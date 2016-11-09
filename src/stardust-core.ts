@@ -1,10 +1,10 @@
 export let version = "0.0.1";
 
-// Math classes and utilities.
-export * from "./core/math";
+// Math classes and utilities
 export * from "./core/utils";
+export * from "./core/math";
 
-// Shape class and shape specification.
+// Shape class and shape specification
 export * from "./core/shape";
 export * from "./core/binding";
 export * from "./core/spec";
@@ -12,17 +12,20 @@ export * from "./core/intrinsics";
 export * from "./core/types";
 export * from "./core/exceptions";
 
-export * from "./core/transform/transforms";
-
-// Parsing and compiling.
+// Parsing and compiling
 export * from "./core/compiler/parser";
 export * from "./core/compiler/compiler";
 export * from "./core/compiler/declare";
 
-// Javascript context.
+// Code transformation
+export * from "./core/transform/transforms";
+
+// Javascript context
 export * from "./core/evaluator/evaluator";
 
-// Builtin platforms.
+// Platform base class
 export * from "./core/platform";
 
-export * from "./core/scales";
+// Scales
+export * from "./core/scale/scale";
+export { scale } from "./core/scale/scales";

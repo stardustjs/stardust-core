@@ -1,18 +1,27 @@
 import { Specification } from "./spec";
-import { Platform, PlatformShape } from "./platform";
-import { Binding, BindingValue } from "./binding";
+import { Platform, PlatformShape, PlatformShapeData } from "./platform";
+import { Binding, BindingValue, BindingPrimitive, getBindingValue } from "./binding";
 import { RuntimeError } from "./exceptions";
 import { Dictionary, shallowClone } from "./utils";
-import { ScaleBinding } from "./scales";
+import { ScaleBinding } from "./scale/scale";
 
-type ShapeBinding = Binding | ScaleBinding;
+export type ShapeBinding = Binding | ScaleBinding;
+
+export interface InstanceInformation {
+    data: any[];
+    attrs: { [ name: string ]: BindingPrimitive };
+};
+
+export type InstanceFunction = (datum: any, index: number, data: any[]) => InstanceInformation;
 
 export class Shape {
     private _spec: Specification.Shape;
     private _platform: Platform;
     private _bindings: Dictionary<ShapeBinding>;
     private _data: any[];
+    private _instanceFunction: InstanceFunction;
     private _platformShape: PlatformShape;
+    private _platformShapeData: PlatformShapeData | PlatformShapeData[];
     private _shouldUploadData: boolean;
 
     constructor(spec: Specification.Shape, platform: Platform) {
@@ -22,6 +31,7 @@ export class Shape {
         this._bindings = new Dictionary<ShapeBinding>();
         this._platformShape = null;
         this._shouldUploadData = true;
+        this._instanceFunction = null;
 
         // Set bindings to default value whenever exists.
         for(let name in this._spec.input) {
@@ -93,6 +103,14 @@ export class Shape {
         }
     }
 
+    public instance(func?: InstanceFunction): Shape | any {
+        if(func === undefined) {
+            return this._instanceFunction;
+        } else {
+            this._instanceFunction = func;
+        }
+    }
+
     // Make alternative spec to include ScaleBinding values.
     public prepareSpecification(): [ Specification.Shape, Dictionary<Binding> ] {
         let newSpec: Specification.Shape = {
@@ -155,7 +173,14 @@ export class Shape {
             this._shouldUploadData = true;
         }
         if(this._shouldUploadData) {
-            this._platformShape.uploadData(this._data);
+            if(this._instanceFunction == null) {
+                this._platformShapeData = this._platformShape.uploadData(this._data);
+            } else {
+                this._platformShapeData = this._data.map((datum, index) => {
+                    let info = this._instanceFunction(datum, index, this._data);
+                    this._platformShape.uploadData(info.data);
+                });
+            }
             this._shouldUploadData = false;
         }
         return this;
@@ -164,7 +189,20 @@ export class Shape {
     public render(): Shape {
         this.prepare();
         this.uploadScaleUniforms();
-        this._platformShape.render();
+        if(this._instanceFunction == null) {
+            this._platformShape.render(this._platformShapeData as PlatformShapeData);
+        } else {
+            let datas = this._platformShapeData as PlatformShapeData[];
+            this._data.forEach((datum, index) => {
+                let info = this._instanceFunction(datum, index, this._data);
+                for(let attr in info.attrs) {
+                    if(info.attrs.hasOwnProperty(attr)) {
+                        this._platformShape.updateUniform(attr, getBindingValue(info.attrs[attr]));
+                    }
+                }
+                this._platformShape.render(datas[index]);
+            });
+        }
         return this;
     }
 }

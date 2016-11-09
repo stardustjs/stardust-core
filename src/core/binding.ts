@@ -13,7 +13,7 @@ export type BindingFunction = (data?: any, index?: number) => BindingPrimitive;
 export type BindingValue = BindingPrimitive | BindingFunction;
 
 // Resolve binding primitives to Value (Value = number or number[]).
-function getBindingValue(value: BindingPrimitive): Specification.Value {
+export function getBindingValue(value: BindingPrimitive): Specification.Value {
     if(value instanceof MathType) {
         return value.toArray();
     } else {

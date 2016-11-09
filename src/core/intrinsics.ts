@@ -236,6 +236,7 @@ RegisterConstructor("Color", [ "float", "float" ],  (v: number, a: number) => [v
 RegisterConstructor("Color", [ "float" ],  (v: number) => [v, v, v, 1]);
 
 RegisterFunction("lab2rgb", [ "Color" ], "Color", (color: number[]) => color);
+RegisterFunction("hcl2rgb", [ "Color" ], "Color", (color: number[]) => color);
 
 // Type conversions.
 // We only allow low-precision to high-precision conversions to be automated.

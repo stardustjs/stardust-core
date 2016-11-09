@@ -11,23 +11,19 @@
     "type": "git",
     "url": "git@github.com:stardust-vis/stardust-core.git"
   },
-  "main": "dist/stardust.js",
-  "typings": "dist/stardust.d.ts",
+  "main": "dist/stardust-core.js",
+  "typings": "dist/stardust-core.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build:ts": "tsc -p src",
     "build:pegjs": "pegjs src/core/compiler/parser.pegjs dist/core/compiler/parser_pegjs.js",
-    "build": "npm-run-all build:ts build:pegjs",
+    "build": "npm run build:ts && npm run build:pegjs",
     "prepublish": "npm run build",
-    "test": "mocha test",
-    "watch:ts": "tsc -w -p src",
-    "watch": "npm-run-all --parallel watch:*"
+    "watch": "tsc -w -p src"
   },
   "devDependencies": {
-    "mocha": "^3.0.0",
-    "npm-run-all": "^3.0.0",
     "pegjs": "^0.9.0",
     "typescript": "^2.0.0"
   },
