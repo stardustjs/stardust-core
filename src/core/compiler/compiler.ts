@@ -642,6 +642,9 @@ export class Compiler {
                 }
                 compileIthCondition(0);
             } break;
+            case "return": {
+                throw new CompileError("unexpected return statement");
+            }
         }
     }
 }
@@ -652,7 +655,7 @@ export function compileTree(file: SyntaxTree.File): Specification.ShapeSpecifica
     for(let block of file.blocks) {
         if(block.type == "function") {
             let blockFunction = block as SyntaxTree.FileBlockFunction;
-            if(blockFunction.returnType == "shape") {
+            if(blockFunction.isShape) {
                 let scope = new Compiler();
                 scope.loadFile(file);
                 let shape = scope.compileFunctionToShape(globals, blockFunction);

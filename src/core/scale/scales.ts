@@ -90,10 +90,7 @@ export module scale {
             return new ScaleBinding(scale, "float", [ "float", "float" ], ...args);
         }) as DomainRangeScale;
         scale.getAttributes = () => [];
-        scale.getExpression = (attrs, value1, value2) => {
-            console.log(value1, value2);
-            return SC.add(value1, value2);
-        }
+        scale.getExpression = (attrs, value1, value2) => SC.add(value1, value2);
         return scale;
     }
 
@@ -124,6 +121,16 @@ export module scale {
         return scale;
     }
 
+    // Common arithmetics
+    export function vector2Scale() {
+        let scale = ((...args: ScaleArgument[]): ScaleBinding => {
+            return new ScaleBinding(scale, "Vector2", [ "float", "float" ], ...args);
+        }) as DomainRangeScale;
+        scale.getAttributes = () => [];
+        scale.getExpression = (attrs, value1, value2) => SC.func("Vector2", "Vector2", value1, value2);
+        return scale;
+    }
+
     export function add(value1: ScaleArgument, value2: ScaleArgument) {
         return addScale()(value1, value2);
     }
@@ -135,5 +142,8 @@ export module scale {
     }
     export function div(value1: ScaleArgument, value2: ScaleArgument) {
         return divScale()(value1, value2);
+    }
+    export function Vector2(value1: ScaleArgument, value2: ScaleArgument) {
+        return vector2Scale()(value1, value2);
     }
 }

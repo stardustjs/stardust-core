@@ -75,9 +75,9 @@ export class CustomShape {
         let inputDefs: string[] = [];
         for(let [ name, type, initial ] of this._inputs) {
             if(initial == null) {
-                inputDefs.push(`${type} ${name}`);
+                inputDefs.push(`${name}: ${type}`);
             } else {
-                inputDefs.push(`${type} ${name} = ${initial}`);
+                inputDefs.push(`${name}: ${type} = ${initial}`);
             }
         }
         lines.push(`shape ${shapeName}(`);
@@ -85,7 +85,7 @@ export class CustomShape {
         lines.push(`) {`);
         // Variables
         for(let [ name, expression ] of this._variables) {
-            lines.push(`    auto ${name} = ${expression};`);
+            lines.push(`    let ${name} = ${expression};`);
         }
         for(let item of this._items) {
             lines.push(`    ${item.generateCode()};`);

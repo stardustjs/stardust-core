@@ -54,14 +54,28 @@ FileBlock
   = Function / GlobalVariable / ImportStatement
 
 Function
-  = ret:Name __ name:Name _ "(" args:FunctionArgumentList ")" _ "{" _ statements:Statements _ "}"
-    { return { type: "function", isShape: ret == "shape", name: name, returnType: ret, arguments: args, statements: statements }; }
+  = type:("function" / "shape") __  name:Name _ "(" args:FunctionArgumentList ")" ret:(_ ":" _ Name)? _ "{" _ statements:Statements _ "}"
+    {
+      return {
+        type: "function",
+        isShape: flatten(type) == "shape",
+        name: name,
+        returnType: ret ? ret[3] : "void",
+        arguments: args,
+        statements: statements
+      };
+    }
 
 GlobalVariable
-  = type:Name __ name:Name _ "=" _ value:Value _ ";"
-    { return { type: "global", name: name, valueType: type, default: value }; }
-  / type:Name __ name:Name _ ";"
-    { return { type: "global", name: name, valueType: type }; }
+  = "let" __ name:Name type:(_ ":" _ Name)? value:(_ "=" _ Value)? _ ";"
+    {
+      return {
+        type: "global",
+        name: name,
+        valueType: type ? type[3] : "auto",
+        default: value ? value[3] : undefined
+      };
+    }
 
 ImportStatement
   = "import" __ "*" __ "from" __ moduleName:Name _ ";"
@@ -76,9 +90,9 @@ FunctionArgumentList
     { return []; }
 
 FunctionArgument
-  = type:Name __ name:Name _ "=" _ value:Value
+  = name:Name _ ":" _ type:Name _ "=" _ value:Value
     { return { type: type, name: name, default: value } }
-  / type:Name __ name:Name
+  / name:Name _ ":" _ type:Name
     { return { type: type, name: name } }
 
 Statements
@@ -128,10 +142,15 @@ ExpressionStatement
     { return { type: "expression", expression: expr }; }
 
 VariableDeclaration
-  = type:Name _ name:Name _ "=" _ initial:Expression
-    { return { type: "declare", variableType: type, variableName: name, initial: initial }; }
-  / type:Name _ name:Name
-    { return { type: "declare", variableType: type, variableName: name }; }
+  = "let" __  name:Name type:(_ ":" _ Name)? initial:(_ "=" _ Expression)?
+    {
+      return {
+        type: "declare",
+        variableType: type ? type[3] : "auto",
+        variableName: name,
+        initial: initial ? initial[3] : undefined
+      };
+    }
 
 VariableAssignment
   = variable:Name _ "=" _ value:Expression

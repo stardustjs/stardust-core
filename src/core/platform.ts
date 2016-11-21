@@ -1,5 +1,5 @@
 import { Specification } from "./spec";
-import { Binding } from "./binding";
+import { Binding, ShiftBinding } from "./binding";
 import { Dictionary } from "./utils";
 import { Shape } from "./shape";
 
@@ -38,5 +38,20 @@ export class Viewport3D extends Viewport {
 
 export abstract class Platform {
     // Compile a shape specification to PlatformShape object.
-    public abstract compile(shape: Shape, spec: Specification.Shape, bindings: Dictionary<Binding>): PlatformShape;
+    public abstract compile(
+        shape: Shape,
+        spec: Specification.Shape,
+        bindings: Dictionary<Binding>,
+        shfitBindings: Dictionary<ShiftBinding>
+    ): PlatformShape;
+}
+
+let platformConstructors = new Dictionary<(...args: any[]) => Platform>();
+
+export function registerPlatformConstructor(name: string, ctor: (...args: any[]) => Platform) {
+    platformConstructors.set(name, ctor);
+}
+
+export function platform(name: string, ...args: any[]): Platform {
+    return platformConstructors.get(name)(...args);
 }

@@ -79,7 +79,7 @@ export interface FlattenedEmits {
 // }
 
 // For now, assume there is no conditional emits.
-export function  FlattenEmits(shape: Specification.Shape): FlattenedEmits {
+export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
     let vertexIndexName = attemptName("s3idx", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
     let emitIndexName = attemptName("s3emitidx", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
     let newShape: Specification.Shape = {

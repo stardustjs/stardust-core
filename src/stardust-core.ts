@@ -5,6 +5,7 @@ export * from "./core/utils";
 export * from "./core/math";
 
 // Shape class and shape specification
+export * from "./core/shapeModule";
 export * from "./core/shape";
 export * from "./core/binding";
 export * from "./core/spec";

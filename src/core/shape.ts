@@ -1,6 +1,6 @@
 import { Specification } from "./spec";
 import { Platform, PlatformShape, PlatformShapeData } from "./platform";
-import { Binding, BindingValue, BindingPrimitive, getBindingValue } from "./binding";
+import { Binding, ShiftBinding, BindingValue, BindingPrimitive, getBindingValue } from "./binding";
 import { RuntimeError } from "./exceptions";
 import { Dictionary, shallowClone } from "./utils";
 import { ScaleBinding } from "./scale/scale";
@@ -9,15 +9,24 @@ export type ShapeBinding = Binding | ScaleBinding;
 
 export interface InstanceInformation {
     data: any[];
-    attrs: { [ name: string ]: BindingPrimitive };
+    attrs?: { [ name: string ]: BindingPrimitive };
+    onRender?: (datum: any, index: number, data: any[]) => any;
 };
 
 export type InstanceFunction = (datum: any, index: number, data: any[]) => InstanceInformation;
+
+let shiftBindingDescriptions = [
+    { shift: -2, suffix: "_pp" },
+    { shift: -1, suffix: "_p" },
+    { shift: +1, suffix: "_n" },
+    { shift: +2, suffix: "_nn" }
+];
 
 export class Shape {
     private _spec: Specification.Shape;
     private _platform: Platform;
     private _bindings: Dictionary<ShapeBinding>;
+    private _shiftBindings: Dictionary<ShiftBinding>;
     private _data: any[];
     private _instanceFunction: InstanceFunction;
     private _platformShape: PlatformShape;
@@ -29,6 +38,7 @@ export class Shape {
         this._data = [];
         this._platform = platform;
         this._bindings = new Dictionary<ShapeBinding>();
+        this._shiftBindings = new Dictionary<ShiftBinding>();
         this._platformShape = null;
         this._shouldUploadData = true;
         this._instanceFunction = null;
@@ -39,6 +49,17 @@ export class Shape {
                 let input = this._spec.input[name];
                 if(input.default != null) {
                     this._bindings.set(name, new Binding(input.type, input.default));
+                }
+            }
+        }
+
+        // Assign shift bindings based on naming convention.
+        for(let name in this._spec.input) {
+            if(this._spec.input.hasOwnProperty(name)) {
+                for(let { shift, suffix } of shiftBindingDescriptions) {
+                    if(this._spec.input.hasOwnProperty(name + suffix)) {
+                        this._shiftBindings.set(name + suffix, new ShiftBinding(name, shift));
+                    }
                 }
             }
         }
@@ -112,7 +133,7 @@ export class Shape {
     }
 
     // Make alternative spec to include ScaleBinding values.
-    public prepareSpecification(): [ Specification.Shape, Dictionary<Binding> ] {
+    public prepareSpecification(): [ Specification.Shape, Dictionary<Binding>, Dictionary<ShiftBinding> ] {
         let newSpec: Specification.Shape = {
             input: shallowClone(this._spec.input),
             output: this._spec.output,
@@ -121,6 +142,7 @@ export class Shape {
         };
 
         let newBindings = this._bindings.clone() as Dictionary<Binding>;
+        let shiftBindings = this._shiftBindings.clone();
 
         this._bindings.forEach((binding, name) => {
             if(binding instanceof ScaleBinding) {
@@ -147,11 +169,52 @@ export class Shape {
                     expression: binding.getExpression(attrs),
                     valueType: newSpec.input[name].type
                 } as Specification.StatementAssign);
+                for(let { suffix, shift } of shiftBindingDescriptions) {
+                    if(newSpec.input.hasOwnProperty(name + suffix)) {
+                        newSpec.variables[name + suffix] = newSpec.input[name].type;
+                        let shiftAttrs: { [ name: string ]: Specification.Expression } = {};
+                        attributes.forEach((attr) => {
+                            let bindedName = name + attr.bindedName;
+                            if(newBindings.get(bindedName).isFunction) {
+                                let shiftBindedName = bindedName + suffix;
+                                shiftBindings.set(shiftBindedName, new ShiftBinding(bindedName, shift));
+                                shiftAttrs[attr.bindedName] = {
+                                    type: "variable",
+                                    valueType: attr.type,
+                                    variableName: shiftBindedName
+                                } as Specification.ExpressionVariable;
+                                newSpec.input[shiftBindedName] = {
+                                    type: attr.type,
+                                    default: null
+                                };
+                            } else {
+                                shiftAttrs[attr.bindedName] = {
+                                    type: "variable",
+                                    valueType: attr.type,
+                                    variableName: bindedName
+                                } as Specification.ExpressionVariable;
+                            }
+                        });
+                        newSpec.statements.splice(0, 0, {
+                            type: "assign",
+                            variableName: name + suffix,
+                            expression: binding.getExpression(shiftAttrs),
+                            valueType: newSpec.input[name].type
+                        } as Specification.StatementAssign);
+                    }
+                }
+
                 delete newSpec.input[name];
                 newBindings.delete(name);
+                for(let { suffix } of shiftBindingDescriptions) {
+                    if(shiftBindings.has(name + suffix)) {
+                        delete newSpec.input[name + suffix];
+                        shiftBindings.delete(name + suffix);
+                    }
+                }
             }
         });
-        return [ newSpec, newBindings ];
+        return [ newSpec, newBindings, shiftBindings ];
     }
 
     public uploadScaleUniforms() {
@@ -168,8 +231,8 @@ export class Shape {
 
     public prepare(): Shape {
         if(!this._platformShape) {
-            let [ spec, binding ] = this.prepareSpecification();
-            this._platformShape = this._platform.compile(this, spec, binding);
+            let [ spec, binding, shiftBinding ] = this.prepareSpecification();
+            this._platformShape = this._platform.compile(this, spec, binding, shiftBinding);
             this._shouldUploadData = true;
         }
         if(this._shouldUploadData) {
@@ -178,7 +241,7 @@ export class Shape {
             } else {
                 this._platformShapeData = this._data.map((datum, index) => {
                     let info = this._instanceFunction(datum, index, this._data);
-                    this._platformShape.uploadData(info.data);
+                    return this._platformShape.uploadData(info.data);
                 });
             }
             this._shouldUploadData = false;
@@ -188,18 +251,23 @@ export class Shape {
 
     public render(): Shape {
         this.prepare();
-        this.uploadScaleUniforms();
         if(this._instanceFunction == null) {
             this._platformShape.render(this._platformShapeData as PlatformShapeData);
         } else {
             let datas = this._platformShapeData as PlatformShapeData[];
             this._data.forEach((datum, index) => {
                 let info = this._instanceFunction(datum, index, this._data);
-                for(let attr in info.attrs) {
-                    if(info.attrs.hasOwnProperty(attr)) {
-                        this._platformShape.updateUniform(attr, getBindingValue(info.attrs[attr]));
+                if(info.attrs != null) {
+                    for(let attr in info.attrs) {
+                        if(info.attrs.hasOwnProperty(attr)) {
+                            this._platformShape.updateUniform(attr, getBindingValue(info.attrs[attr]));
+                        }
                     }
                 }
+                if(info.onRender) {
+                    info.onRender(datum, index, this._data);
+                }
+                this.uploadScaleUniforms();
                 this._platformShape.render(datas[index]);
             });
         }

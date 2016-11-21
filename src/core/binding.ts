@@ -21,6 +21,13 @@ export function getBindingValue(value: BindingPrimitive): Specification.Value {
     }
 }
 
+export class ShiftBinding {
+    constructor(
+        public name: string,
+        public offset: number
+    ) { }
+}
+
 // The main binding class.
 export class Binding {
     private _type: Type;
