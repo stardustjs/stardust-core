@@ -101,3 +101,7 @@ export interface DomainRangeScale extends Scale {
     domain: (value?: [ BindingValue, BindingValue ]) => DomainRangeScale | [ BindingValue, BindingValue ];
     range: (value?: [ BindingValue, BindingValue ]) => DomainRangeScale | [ BindingValue, BindingValue ];
 }
+
+export interface CustomScale extends Scale {
+    attr: (name: string, value?: BindingValue) => CustomScale | BindingValue;
+}

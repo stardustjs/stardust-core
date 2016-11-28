@@ -30,7 +30,7 @@ export class Shape {
     private _data: any[];
     private _instanceFunction: InstanceFunction;
     private _platformShape: PlatformShape;
-    private _platformShapeData: PlatformShapeData | PlatformShapeData[];
+    private _platformShapeData: PlatformShapeData;
     private _shouldUploadData: boolean;
 
     constructor(spec: Specification.Shape, platform: Platform) {
@@ -138,7 +138,9 @@ export class Shape {
             input: shallowClone(this._spec.input),
             output: this._spec.output,
             statements: this._spec.statements.slice(),
-            variables: shallowClone(this._spec.variables)
+            variables: shallowClone(this._spec.variables),
+            repeatBegin: this._spec.repeatBegin,
+            repeatEnd: this._spec.repeatEnd
         };
 
         let newBindings = this._bindings.clone() as Dictionary<Binding>;
@@ -237,12 +239,14 @@ export class Shape {
         }
         if(this._shouldUploadData) {
             if(this._instanceFunction == null) {
-                this._platformShapeData = this._platformShape.uploadData(this._data);
+                this._platformShapeData = this._platformShape.uploadData([ this._data ]);
             } else {
-                this._platformShapeData = this._data.map((datum, index) => {
+                let allData: any[][] = [];
+                this._data.forEach((datum, index) => {
                     let info = this._instanceFunction(datum, index, this._data);
-                    return this._platformShape.uploadData(info.data);
+                    allData.push(info.data);
                 });
+                this._platformShapeData = this._platformShape.uploadData(allData);
             }
             this._shouldUploadData = false;
         }
@@ -252,10 +256,12 @@ export class Shape {
     public render(): Shape {
         this.prepare();
         if(this._instanceFunction == null) {
-            this._platformShape.render(this._platformShapeData as PlatformShapeData);
+            this._platformShape.render(this._platformShapeData, () => {
+                this.uploadScaleUniforms();
+            });
         } else {
-            let datas = this._platformShapeData as PlatformShapeData[];
-            this._data.forEach((datum, index) => {
+            this._platformShape.render(this._platformShapeData, (index: number) => {
+                let datum = this._data[index];
                 let info = this._instanceFunction(datum, index, this._data);
                 if(info.attrs != null) {
                     for(let attr in info.attrs) {
@@ -268,7 +274,6 @@ export class Shape {
                     info.onRender(datum, index, this._data);
                 }
                 this.uploadScaleUniforms();
-                this._platformShape.render(datas[index]);
             });
         }
         return this;

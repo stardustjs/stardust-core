@@ -70,7 +70,7 @@ export module shape {
     }
 
     export function polyline(): Specification.Shape {
-        return shape.compile(`
+        let spec = shape.compile(`
             import Triangle from P2D;
 
             shape Sector2(
@@ -154,5 +154,8 @@ export module shape {
                 Triangle(p, b2, p_n, color);
             }
         `)["PolylineRound"];
+        spec.repeatBegin = 1;
+        spec.repeatEnd = 1;
+        return spec;
     }
 }

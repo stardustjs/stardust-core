@@ -151,7 +151,7 @@ export module SyntaxTree {
 // Import the pegjs generated parser.
 declare function require(name: string): any;
 interface PEGJSCompiled {
-    parse: (content: string) => SyntaxTree.File;
+    parse(content: string, options: { [ name: string ]: string }): SyntaxTree.File | SyntaxTree.Expression;
 }
 let parser_pegjs: PEGJSCompiled = require("./parser_pegjs");
 
@@ -169,7 +169,21 @@ export function parseString(content: string): SyntaxTree.File {
     content = stripComments(content);
     let result: SyntaxTree.File = null;
     try {
-        result = parser_pegjs.parse(content);
+        result = parser_pegjs.parse(content, { startRule: "Start" }) as SyntaxTree.File;
+    } catch(e) {
+        if(e.location) {
+            throw new ParseError(e.message, e.location.start, e.location.end);
+        } else {
+            throw new ParseError(e.message);
+        }
+    }
+    return result;
+}
+
+export function parseExpression(content: string): SyntaxTree.Expression {
+    let result: SyntaxTree.Expression = null;
+    try {
+        result = parser_pegjs.parse(content, { startRule: "Expression" }) as SyntaxTree.Expression;
     } catch(e) {
         if(e.location) {
             throw new ParseError(e.message, e.location.start, e.location.end);

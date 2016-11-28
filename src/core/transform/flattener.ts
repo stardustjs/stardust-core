@@ -86,7 +86,9 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
         input: {},
         output: shape.output,
         variables: shape.variables,
-        statements: []
+        statements: [],
+        repeatBegin: shape.repeatBegin,
+        repeatEnd: shape.repeatEnd
     }
     for(let i in shape.input) {
         if(shape.input.hasOwnProperty(i)) {

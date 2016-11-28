@@ -96,6 +96,8 @@ export module Specification {
         output: { [name: string]: Output };
         variables: { [name: string]: ValueType };
         statements: Statement[];
+        repeatBegin?: number;
+        repeatEnd?: number;
     }
 
     export interface ShapeSpecifications {

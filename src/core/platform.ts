@@ -12,10 +12,10 @@ export abstract class PlatformShape {
     // Update a uniform in the spec, on isUniform(name) == true.
     public abstract updateUniform(name: string, value: Specification.Value): void;
     // Upload data to the shape.
-    public abstract uploadData(data: any[]): PlatformShapeData;
+    public abstract uploadData(data: any[][]): PlatformShapeData;
 
     // Render the graphics.
-    public abstract render(data: PlatformShapeData): void;
+    public abstract render(data: PlatformShapeData, onRender: (i: number) => void): void;
 }
 
 export class Viewport {

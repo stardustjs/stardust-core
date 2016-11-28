@@ -1,7 +1,10 @@
 // Prebuilt scales.
+import { Dictionary } from "../utils";
+import { compileExpression } from "../compiler/compiler";
+import { parseExpression } from "../compiler/parser";
 import { Specification } from "../spec";
 import { BindingValue, BindingPrimitive } from "../binding";
-import { ScaleArgument, ScaleBinding, Scale, DomainRangeScale } from "./scale";
+import { ScaleArgument, ScaleBinding, Scale, DomainRangeScale, CustomScale, ScaleAttributeInfo } from "./scale";
 import * as SC from "../specConstruct";
 
 export module scale {
@@ -145,5 +148,49 @@ export module scale {
     }
     export function Vector2(value1: ScaleArgument, value2: ScaleArgument) {
         return vector2Scale()(value1, value2);
+    }
+
+    export function custom(expr: string): CustomScale {
+        let parsed = parseExpression(expr);
+        let scale = ((...args: ScaleArgument[]): ScaleBinding => {
+            // Inference the return type
+            let vars = new Dictionary<Specification.Expression>();
+            attributes.forEach((attr, name) => {
+                vars.set(name, { type: "constant", valueType: attr.type, value: null } as Specification.ExpressionConstant);
+            });
+            vars.set("value", { type: "constant", valueType: "float", value: null } as Specification.ExpressionConstant);
+            let e = compileExpression(parsed, vars);
+            return new ScaleBinding(scale, e.valueType, [ "float" ], ...args);
+        }) as CustomScale;
+
+        let attributes = new Dictionary<{ type: string, value: BindingValue }>();
+
+        scale.attr = (name: string, value: BindingValue) => {
+            if(value == null) {
+                return attributes.get(name).value;
+            } else {
+                attributes.set(name, { type: "float", value: value });
+                return scale;
+            }
+        };
+
+        scale.getAttributes = () => {
+            let r: ScaleAttributeInfo[] = [];;
+            attributes.forEach((attr, name) => {
+                r.push({ name: name, type: attr.type, binding: attr.value });
+            });
+            return r;
+        };
+        scale.getExpression = (attrs, value) => {
+            let vars = new Dictionary<Specification.Expression>();
+            for(let name in attrs) {
+                if(attrs.hasOwnProperty(name)) {
+                    vars.set(name, attrs[name]);
+                }
+            }
+            vars.set("value", value);
+            return compileExpression(parsed, vars);
+        }
+        return scale;
     }
 }

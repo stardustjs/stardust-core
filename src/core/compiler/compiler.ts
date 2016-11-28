@@ -434,7 +434,7 @@ export class Compiler {
         return result;
     }
 
-    public compileExpression(expression: SyntaxTree.Expression, keepResult: boolean = false): Specification.Expression {
+    public compileExpression(expression: SyntaxTree.Expression): Specification.Expression {
         switch(expression.type) {
             case "value": {
                 let expr = expression as SyntaxTree.ExpressionValue;
@@ -463,7 +463,7 @@ export class Compiler {
             }
             case "field": {
                 let expr = expression as SyntaxTree.ExpressionField;
-                let valueExpr = this.compileExpression(expr.value, true);
+                let valueExpr = this.compileExpression(expr.value);
                 return {
                     type: "field",
                     fieldName: expr.fieldName,
@@ -478,11 +478,11 @@ export class Compiler {
                 let kwargs: { [ name: string ]: Specification.Expression } = {};
 
                 for(let arg of expr.args.args) {
-                    args.push(this.compileExpression(arg, true));
+                    args.push(this.compileExpression(arg));
                 }
                 for(let key in expr.args.kwargs) {
                     let e = expr.args.kwargs[key];
-                    kwargs[key] = this.compileExpression(expr.args.kwargs[key], true);
+                    kwargs[key] = this.compileExpression(expr.args.kwargs[key]);
                 }
 
                 let [ func, argExpressions ] = this.resolveFunction(expr.name, args, kwargs);
@@ -528,6 +528,70 @@ export class Compiler {
         return null;
     }
 
+    public compileStandaloneExpression(expression: SyntaxTree.Expression, variables: Dictionary<Specification.Expression>): Specification.Expression {
+        switch(expression.type) {
+            case "value": {
+                let expr = expression as SyntaxTree.ExpressionValue;
+                return {
+                    type: "constant",
+                    value: expr.value,
+                    valueType: expr.valueType
+                } as Specification.ExpressionConstant;
+            }
+            case "variable": {
+                let expr = expression as SyntaxTree.ExpressionVariable;
+                if(variables.has(expr.name)) {
+                    return variables.get(expr.name);
+                } else {
+                    if(this._constants.has(expr.name)) {
+                        let cinfo = this._constants.get(expr.name);
+                        return {
+                            type: "constant",
+                            value: cinfo.value,
+                            valueType: cinfo.type
+                        } as Specification.ExpressionConstant;
+                    } else {
+                        throw new CompileError(`variable ${expr.name} is undefined`);
+                    }
+                }
+            }
+            case "field": {
+                let expr = expression as SyntaxTree.ExpressionField;
+                let valueExpr = this.compileStandaloneExpression(expr.value, variables);
+                return {
+                    type: "field",
+                    fieldName: expr.fieldName,
+                    value: valueExpr,
+                    valueType: this._fieldTypeRegistry[valueExpr.valueType + "." + expr.fieldName]
+                } as Specification.ExpressionField;
+            }
+            case "function": {
+                let expr = expression as SyntaxTree.ExpressionFunction;
+
+                let args: Specification.Expression[] = [];
+                let kwargs: { [ name: string ]: Specification.Expression } = {};
+
+                for(let arg of expr.args.args) {
+                    args.push(this.compileStandaloneExpression(arg, variables));
+                }
+                for(let key in expr.args.kwargs) {
+                    let e = expr.args.kwargs[key];
+                    kwargs[key] = this.compileStandaloneExpression(expr.args.kwargs[key], variables);
+                }
+
+                let [ func, argExpressions ] = this.resolveFunction(expr.name, args, kwargs);
+
+                return {
+                    type: "function",
+                    functionName: func.name,
+                    arguments: argExpressions,
+                    valueType: func.returnType
+                } as Specification.ExpressionFunction;
+            }
+        }
+        return null;
+    }
+
     public compileStatements(statements: SyntaxTree.StatementStatements): void {
         this._scope.pushScope();
         for(let s of statements.statements) {
@@ -541,7 +605,7 @@ export class Compiler {
             case "declare": {
                 let s = statement as SyntaxTree.StatementDeclare;
                 if(s.initial) {
-                    let ve = this.compileExpression(s.initial, true);
+                    let ve = this.compileExpression(s.initial);
                     let variableType = s.variableType;
                     if(variableType == "auto") variableType = ve.valueType;
                     this._scope.addVariable(s.variableName, variableType, "local");
@@ -563,11 +627,11 @@ export class Compiler {
             } break;
             case "expression": {
                 let s = statement as SyntaxTree.StatementExpression;
-                this.compileExpression(s.expression, false);
+                this.compileExpression(s.expression);
             } break;
             case "assign": {
                 let s = statement as SyntaxTree.StatementAssign;
-                let ve = this.compileExpression(s.expression, true);
+                let ve = this.compileExpression(s.expression);
                 let targetType = this._scope.getVariable(s.variableName).type;
                 if(ve.valueType != targetType) {
                     let veType = ve.valueType;
@@ -588,7 +652,7 @@ export class Compiler {
                     let attrs: { [name: string]: Specification.Expression } = {};
                     for(let argName in v) {
                         let expr = v[argName];
-                        attrs[argName] = this.compileExpression(expr, true);
+                        attrs[argName] = this.compileExpression(expr);
                     }
                     this.addStatement({
                         type: "emit",
@@ -625,7 +689,7 @@ export class Compiler {
                     if(i < s.conditions.length) {
                         let statements: Specification.Statement[] = [];
                         this._scope.pushScope();
-                        let ve = this.compileExpression(s.conditions[i].condition, true);
+                        let ve = this.compileExpression(s.conditions[i].condition);
                         let cond: Specification.StatementCondition = {
                             type: "condition",
                             condition: ve,
@@ -664,6 +728,11 @@ export function compileTree(file: SyntaxTree.File): Specification.ShapeSpecifica
         }
     }
     return spec;
+}
+
+let standaloneCompiler = new Compiler();
+export function compileExpression(expr: SyntaxTree.Expression, variables: Dictionary<Specification.Expression>): Specification.Expression {
+    return standaloneCompiler.compileStandaloneExpression(expr, variables);
 }
 
 export function compileString(content: string): Specification.ShapeSpecifications {
