@@ -80,7 +80,8 @@ export interface FlattenedEmits {
 
 // For now, assume there is no conditional emits.
 export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
-    let vertexIndexName = attemptName("s3idx", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
+    let vertexIndexNameFloat = attemptName("s3idx", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
+    let vertexIndexName = attemptName("s3idx_i", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
     let emitIndexName = attemptName("s3emitidx", (c) => !shape.variables.hasOwnProperty(c) && !shape.input.hasOwnProperty(c));
     let newShape: Specification.Shape = {
         input: {},
@@ -95,16 +96,23 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
             newShape.input[i] = shape.input[i];
         }
     }
-    newShape.input[vertexIndexName] = {
+    newShape.input[vertexIndexNameFloat] = {
         type: "float",
         default: 0
     };
-    newShape.variables[emitIndexName] = "float";
+    newShape.variables[vertexIndexName] = "int";
+    newShape.variables[emitIndexName] = "int";
+
+    newShape.statements.push({
+        type: "assign",
+        variableName: vertexIndexName,
+        expression: SC.cast(SC.variable(vertexIndexNameFloat, "float"), "int")
+    } as Specification.StatementAssign);
 
     newShape.statements.push({
         type: "assign",
         variableName: emitIndexName,
-        expression: SC.constant(-0.5, "float")
+        expression: SC.constant(0, "int")
     } as Specification.StatementAssign);
 
     let generateStatements = (statements: Specification.Statement[]): [ Specification.Statement[], number ] => {
@@ -115,7 +123,7 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
                 case "emit": {
                     result.push({
                         type: "condition",
-                        condition: SC.greaterThan(
+                        condition: SC.equals(
                             SC.variable(vertexIndexName, "float"),
                             SC.variable(emitIndexName, "float"),
                         ),
@@ -125,7 +133,7 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
                     result.push({
                         type: "assign",
                         variableName: emitIndexName,
-                        expression: SC.add(SC.variable(emitIndexName, "float"), SC.constant(1, "float"))
+                        expression: SC.add(SC.variable(emitIndexName, "int"), SC.constant(1, "int"))
                     } as Specification.StatementAssign);
                     maxNumberEmits += 1;
                 } break;
@@ -167,6 +175,6 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
     return {
         specification: newShape,
         count: maxNumberEmits,
-        indexVariable: vertexIndexName
+        indexVariable: vertexIndexNameFloat
     };
 }

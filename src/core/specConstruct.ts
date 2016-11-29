@@ -28,6 +28,19 @@ export function op(name: string, returnType: string, ...args: Specification.Expr
     } as Specification.ExpressionFunction;
 }
 
+export function cast(from: Specification.Expression, to: string): Specification.Expression {
+    return {
+        type: "function",
+        functionName: getInternalName({
+            name: `cast:${from.valueType}:${to}`,
+            argTypes: [ from.valueType ],
+            returnType: to
+        }),
+        valueType: to,
+        arguments: [ from ],
+    } as Specification.ExpressionFunction;
+}
+
 export function variable(varName: string, varType: string): Specification.Expression {
     return {
         type: "variable",
@@ -69,10 +82,22 @@ export function div(a1: Specification.Expression, a2: Specification.Expression) 
     return op("/", a1.valueType, a1, a2);
 }
 
+export function equals(a1: Specification.Expression, a2: Specification.Expression) {
+    return op("==", "bool", a1, a2);
+}
+
 export function greaterThan(a1: Specification.Expression, a2: Specification.Expression) {
     return op(">", "bool", a1, a2);
 }
 
 export function lessThan(a1: Specification.Expression, a2: Specification.Expression) {
     return op("<", "bool", a1, a2);
+}
+
+export function greaterThanOrEquals(a1: Specification.Expression, a2: Specification.Expression) {
+    return op(">=", "bool", a1, a2);
+}
+
+export function lessThanOrEquals(a1: Specification.Expression, a2: Specification.Expression) {
+    return op("<=", "bool", a1, a2);
 }
