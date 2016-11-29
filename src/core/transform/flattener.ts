@@ -97,7 +97,7 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
         }
     }
     newShape.input[vertexIndexNameFloat] = {
-        type: "float",
+        type: "float", // this must be float, because WebGL doesn't have integer attributes.
         default: 0
     };
     newShape.variables[vertexIndexName] = "int";
@@ -124,8 +124,8 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
                     result.push({
                         type: "condition",
                         condition: SC.equals(
-                            SC.variable(vertexIndexName, "float"),
-                            SC.variable(emitIndexName, "float"),
+                            SC.variable(vertexIndexName, "int"),
+                            SC.variable(emitIndexName, "int")
                         ),
                         trueStatements: [ statements[i] ],
                         falseStatements: []
@@ -140,13 +140,67 @@ export function FlattenEmits(shape: Specification.Shape): FlattenedEmits {
                 case "for": {
                     let forStatement = statements[i] as Specification.StatementForLoop;
                     let [ generatedStatements, maxNumber ] = generateStatements(forStatement.statements);
-                    result.push({
-                        type: "for",
-                        variableName: forStatement.variableName,
-                        rangeMin: forStatement.rangeMin,
-                        rangeMax: forStatement.rangeMax,
-                        statements: generatedStatements
-                    } as Specification.StatementForLoop);
+                    let mappingMode = true;
+                    if(mappingMode) {
+                        // Here we assume for loops only alter its internal variables, not anything outside, so each turn is independent.
+                        let tStatements: Specification.Statement[] = [];
+                        tStatements.push({
+                            type: "assign",
+                            variableName: forStatement.variableName,
+                            expression: SC.add(
+                                SC.div(SC.sub(SC.variable(vertexIndexName, "int"), SC.variable(emitIndexName, "int")), SC.constant(maxNumber, "int")),
+                                SC.constant(forStatement.rangeMin, "int")
+                            )
+                        } as Specification.StatementAssign);
+                        tStatements.push({
+                            type: "assign",
+                            variableName: emitIndexName,
+                            expression: SC.add(
+                                SC.variable(emitIndexName, "int"),
+                                SC.mul(SC.constant(maxNumber, "int"), SC.sub(SC.variable(forStatement.variableName, "int"), SC.constant(forStatement.rangeMin, "int")))
+                            )
+                        } as Specification.StatementAssign);
+                        tStatements = tStatements.concat(generatedStatements);
+                        tStatements.push({
+                            type: "assign",
+                            variableName: emitIndexName,
+                            expression: SC.add(
+                                SC.variable(emitIndexName, "int"),
+                                SC.mul(SC.constant(maxNumber, "int"), SC.sub(SC.constant(forStatement.rangeMax, "int"), SC.variable(forStatement.variableName, "int")))
+                            )
+                        } as Specification.StatementAssign);
+                        result.push({
+                            type: "condition",
+                            condition: SC.op("&&", "bool",
+                                SC.greaterThanOrEquals(
+                                    SC.variable(vertexIndexName, "int"),
+                                    SC.variable(emitIndexName, "int")
+                                ),
+                                SC.lessThan(
+                                    SC.variable(vertexIndexName, "int"),
+                                    SC.add(SC.variable(emitIndexName, "int"), SC.constant(maxNumber * (forStatement.rangeMax - forStatement.rangeMin + 1), "int"))
+                                )
+                            ),
+                            trueStatements: tStatements,
+                            falseStatements: [ {
+                                type: "assign",
+                                    variableName: emitIndexName,
+                                    expression: SC.add(
+                                        SC.variable(emitIndexName, "int"),
+                                        SC.constant((forStatement.rangeMax - forStatement.rangeMin + 1) * maxNumber, "int")
+                                    )
+                                } as Specification.StatementAssign
+                            ]
+                        } as Specification.StatementCondition);
+                    } else {
+                        result.push({
+                            type: "for",
+                            variableName: forStatement.variableName,
+                            rangeMin: forStatement.rangeMin,
+                            rangeMax: forStatement.rangeMax,
+                            statements: generatedStatements
+                        } as Specification.StatementForLoop);
+                    }
                     maxNumberEmits += (forStatement.rangeMax - forStatement.rangeMin + 1) * maxNumber;
                 } break;
                 case "condition": {
