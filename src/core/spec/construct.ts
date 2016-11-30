@@ -1,5 +1,5 @@
 // Construct part of specification.
-import { getInternalName } from "./intrinsics";
+import { getInternalName } from "../intrinsics/intrinsics";
 import { Specification } from "./spec";
 
 export function func(name: string, returnType: string, ...args: Specification.Expression[]): Specification.Expression {

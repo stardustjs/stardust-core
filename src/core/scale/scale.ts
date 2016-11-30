@@ -1,5 +1,5 @@
-import { Specification } from "../spec";
-import { BindingValue, BindingPrimitive } from "../binding";
+import { Specification } from "../spec/spec";
+import { BindingValue, BindingPrimitive } from "../binding/binding";
 
 export type ScaleArgument = BindingValue | ScaleBinding;
 

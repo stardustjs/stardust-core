@@ -1,5 +1,5 @@
 export let primitives = `
-    shape Triangle(
+    mark Triangle(
         p1: Vector2,
         p2: Vector2,
         p3: Vector2,
@@ -12,7 +12,7 @@ export let primitives = `
         ];
     }
 
-    shape Rectangle(
+    mark Rectangle(
         p1: Vector2,
         p2: Vector2,
         color: Color = [ 0, 0, 0, 1 ]
@@ -29,7 +29,7 @@ export let primitives = `
         ];
     }
 
-    shape OutlinedRectangle(
+    mark OutlinedRectangle(
         p1: Vector2,
         p2: Vector2,
         width: float = 1,
@@ -41,7 +41,7 @@ export let primitives = `
         Rectangle(Vector2(p2.x - width, p1.y + width), p2, color);
     }
 
-    shape Hexagon(
+    mark Hexagon(
         center: Vector2,
         radius: float,
         color: Color = [ 0, 0, 0, 1 ]
@@ -59,7 +59,7 @@ export let primitives = `
         }
     }
 
-    shape Circle16(
+    mark Circle16(
         center: Vector2,
         radius: float,
         color: Color = [ 0, 0, 0, 1 ]
@@ -77,7 +77,7 @@ export let primitives = `
         }
     }
 
-    shape Circle(
+    mark Circle(
         center: Vector2,
         radius: float,
         color: Color = [ 0, 0, 0, 1 ]
@@ -95,7 +95,7 @@ export let primitives = `
         }
     }
 
-    shape Line(
+    mark Line(
         p1: Vector2,
         p2: Vector2,
         width: float = 1,
@@ -115,7 +115,7 @@ export let primitives = `
         ];
     }
 
-    shape Sector2(
+    mark Sector2(
         c: Vector2,
         p1: Vector2,
         p2: Vector2,
@@ -126,7 +126,7 @@ export let primitives = `
         Triangle(c, pc, p2, color);
     }
 
-    shape Sector4(
+    mark Sector4(
         c: Vector2,
         p1: Vector2,
         p2: Vector2,
@@ -137,7 +137,7 @@ export let primitives = `
         Sector2(c, pc, p2, color);
     }
 
-    shape Polyline(
+    mark Polyline(
         p: Vector2, p_p: Vector2, p_n: Vector2, p_nn: Vector2,
         width: float,
         color: Color = [ 0, 0, 0, 1 ]

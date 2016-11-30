@@ -1,11 +1,11 @@
-import { Specification } from "./spec";
-import { Platform, PlatformShape, PlatformShapeData } from "./platform";
-import { Binding, ShiftBinding, BindingValue, BindingPrimitive, getBindingValue } from "./binding";
-import { RuntimeError } from "./exceptions";
-import { Dictionary, shallowClone } from "./utils";
-import { ScaleBinding } from "./scale/scale";
+import { Specification } from "../spec/spec";
+import { Platform, PlatformMark, PlatformMarkData } from "../platform/platform";
+import { Binding, ShiftBinding, BindingValue, BindingPrimitive, getBindingValue } from "../binding/binding";
+import { RuntimeError } from "../exceptions";
+import { Dictionary, shallowClone } from "../utils/utils";
+import { ScaleBinding } from "../scale/scale";
 
-export type ShapeBinding = Binding | ScaleBinding;
+export type MarkBinding = Binding | ScaleBinding;
 
 export interface InstanceInformation {
     data: any[];
@@ -22,24 +22,24 @@ let shiftBindingDescriptions = [
     { shift: +2, suffix: "_nn" }
 ];
 
-export class Shape {
-    private _spec: Specification.Shape;
+export class Mark {
+    private _spec: Specification.Mark;
     private _platform: Platform;
-    private _bindings: Dictionary<ShapeBinding>;
+    private _bindings: Dictionary<MarkBinding>;
     private _shiftBindings: Dictionary<ShiftBinding>;
     private _data: any[];
     private _instanceFunction: InstanceFunction;
-    private _platformShape: PlatformShape;
-    private _platformShapeData: PlatformShapeData;
+    private _platformMark: PlatformMark;
+    private _platformMarkData: PlatformMarkData;
     private _shouldUploadData: boolean;
 
-    constructor(spec: Specification.Shape, platform: Platform) {
+    constructor(spec: Specification.Mark, platform: Platform) {
         this._spec = spec;
         this._data = [];
         this._platform = platform;
-        this._bindings = new Dictionary<ShapeBinding>();
+        this._bindings = new Dictionary<MarkBinding>();
         this._shiftBindings = new Dictionary<ShiftBinding>();
-        this._platformShape = null;
+        this._platformMark = null;
         this._shouldUploadData = true;
         this._instanceFunction = null;
 
@@ -65,13 +65,13 @@ export class Shape {
         }
     }
 
-    public get spec(): Specification.Shape {
+    public get spec(): Specification.Mark {
         return this._spec;
     }
 
     public attr(name: string): BindingValue | ScaleBinding;
-    public attr(name: string, value: BindingValue | ScaleBinding): Shape;
-    public attr(name: string, value?: BindingValue | ScaleBinding): Shape | BindingValue | ScaleBinding {
+    public attr(name: string, value: BindingValue | ScaleBinding): Mark;
+    public attr(name: string, value?: BindingValue | ScaleBinding): Mark | BindingValue | ScaleBinding {
         if(value === undefined) {
             if(!this._bindings.has(name)) {
                 throw new RuntimeError(`attr '${name} is undefined.`);
@@ -87,9 +87,9 @@ export class Shape {
                 throw new RuntimeError(`attr '${name} is undefined.`);
             }
             if(value instanceof ScaleBinding) {
-                if(this._platformShape) {
+                if(this._platformMark) {
                     if(this._bindings.get(name) != value) {
-                        this._platformShape = null;
+                        this._platformMark = null;
                     }
                 }
                 this._bindings.set(name, value);
@@ -97,13 +97,13 @@ export class Shape {
                 // Create new binding.
                 let newBinding = new Binding(this._spec.input[name].type, value);
                 // Decide if we should recompile the platform code.
-                if(this._platformShape) {
+                if(this._platformMark) {
                     // Recompile if the input was compiled as input,
                     // and the new binding is not a function.
-                    if(this._platformShape.isUniform(name) && !newBinding.isFunction) {
-                        this._platformShape.updateUniform(name, newBinding.specValue);
+                    if(this._platformMark.isUniform(name) && !newBinding.isFunction) {
+                        this._platformMark.updateUniform(name, newBinding.specValue);
                     } else {
-                        this._platformShape = null;
+                        this._platformMark = null;
                     }
                 }
                 this._bindings.set(name, newBinding);
@@ -113,8 +113,8 @@ export class Shape {
     }
 
     public data(): any[];
-    public data(data: any[]): Shape;
-    public data(data?: any[]): Shape | any[] {
+    public data(data: any[]): Mark;
+    public data(data?: any[]): Mark | any[] {
         if(data === undefined) {
             return this._data;
         } else {
@@ -124,7 +124,7 @@ export class Shape {
         }
     }
 
-    public instance(func?: InstanceFunction): Shape | any {
+    public instance(func?: InstanceFunction): Mark | any {
         if(func === undefined) {
             return this._instanceFunction;
         } else {
@@ -133,8 +133,8 @@ export class Shape {
     }
 
     // Make alternative spec to include ScaleBinding values.
-    public prepareSpecification(): [ Specification.Shape, Dictionary<Binding>, Dictionary<ShiftBinding> ] {
-        let newSpec: Specification.Shape = {
+    public prepareSpecification(): [ Specification.Mark, Dictionary<Binding>, Dictionary<ShiftBinding> ] {
+        let newSpec: Specification.Mark = {
             input: shallowClone(this._spec.input),
             output: this._spec.output,
             statements: this._spec.statements.slice(),
@@ -225,48 +225,48 @@ export class Shape {
                 let attributes = binding.getAttributes();
                 let attrs: { [ name: string ]: Specification.Expression } = {};
                 attributes.forEach((attr) => {
-                    this._platformShape.updateUniform(name + attr.bindedName, attr.binding as Specification.Value);
+                    this._platformMark.updateUniform(name + attr.bindedName, attr.binding as Specification.Value);
                 });
             }
         });
     }
 
-    public prepare(): Shape {
-        if(!this._platformShape) {
+    public prepare(): Mark {
+        if(!this._platformMark) {
             let [ spec, binding, shiftBinding ] = this.prepareSpecification();
-            this._platformShape = this._platform.compile(this, spec, binding, shiftBinding);
+            this._platformMark = this._platform.compile(this, spec, binding, shiftBinding);
             this._shouldUploadData = true;
         }
         if(this._shouldUploadData) {
             if(this._instanceFunction == null) {
-                this._platformShapeData = this._platformShape.uploadData([ this._data ]);
+                this._platformMarkData = this._platformMark.uploadData([ this._data ]);
             } else {
                 let allData: any[][] = [];
                 this._data.forEach((datum, index) => {
                     let info = this._instanceFunction(datum, index, this._data);
                     allData.push(info.data);
                 });
-                this._platformShapeData = this._platformShape.uploadData(allData);
+                this._platformMarkData = this._platformMark.uploadData(allData);
             }
             this._shouldUploadData = false;
         }
         return this;
     }
 
-    public render(): Shape {
+    public render(): Mark {
         this.prepare();
         if(this._instanceFunction == null) {
-            this._platformShape.render(this._platformShapeData, () => {
+            this._platformMark.render(this._platformMarkData, () => {
                 this.uploadScaleUniforms();
             });
         } else {
-            this._platformShape.render(this._platformShapeData, (index: number) => {
+            this._platformMark.render(this._platformMarkData, (index: number) => {
                 let datum = this._data[index];
                 let info = this._instanceFunction(datum, index, this._data);
                 if(info.attrs != null) {
                     for(let attr in info.attrs) {
                         if(info.attrs.hasOwnProperty(attr)) {
-                            this._platformShape.updateUniform(attr, getBindingValue(info.attrs[attr]));
+                            this._platformMark.updateUniform(attr, getBindingValue(info.attrs[attr]));
                         }
                     }
                 }

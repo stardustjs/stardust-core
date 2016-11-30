@@ -1,8 +1,8 @@
-import { Specification } from "../spec";
+import { Specification } from "../spec/spec";
 import { RuntimeError } from "../exceptions";
-import { Dictionary } from "../utils";
+import { Dictionary } from "../utils/utils";
 
-import * as Intrinsics from "../intrinsics";
+import * as Intrinsics from "../intrinsics/intrinsics";
 
 export type EmittedVertex = { [ name: string ]: Specification.Value };
 
@@ -100,10 +100,10 @@ export class Context {
         return result;
     }
 
-    public evaluateShape(shape: Specification.Shape, inputs: { [name: string]: Specification.Value }): EmittedVertex[] {
+    public evaluateMark(mark: Specification.Mark, inputs: { [name: string]: Specification.Value }): EmittedVertex[] {
         for(let name in inputs) {
             this.set(name, inputs[name]);
         }
-        return this.evaluateStatements(shape.statements);
+        return this.evaluateStatements(mark.statements);
     }
 }

@@ -1,5 +1,5 @@
-import { SyntaxTree, parseString } from "../compiler/parser";
-import { Dictionary } from "../utils";
+import { SyntaxTree, parseFile } from "../compiler/parser";
+import { Dictionary } from "../utils/utils";
 
 let modules = new Dictionary<Dictionary<SyntaxTree.FileBlockFunction>>();
 
@@ -11,7 +11,7 @@ function importPrimitiveCode(name: string, code: string) {
         thisModule = new Dictionary<SyntaxTree.FileBlockFunction>();
         modules.set(name, thisModule);
     }
-    let tree = parseString(code);
+    let tree = parseFile(code);
     for(let f of tree.blocks) {
         if(f.type == "function") {
             let fn = f as SyntaxTree.FileBlockFunction;

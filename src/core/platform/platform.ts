@@ -1,21 +1,20 @@
-import { Specification } from "./spec";
-import { Binding, ShiftBinding } from "./binding";
-import { Dictionary } from "./utils";
-import { Shape } from "./shape";
+import { Specification } from "../spec/spec";
+import { Binding, ShiftBinding } from "../binding/binding";
+import { Dictionary } from "../utils/utils";
+import { Mark } from "../mark/mark";
 
-export abstract class PlatformShapeData {
-}
+export abstract class PlatformMarkData {}
 
-export abstract class PlatformShape {
+export abstract class PlatformMark {
     // Is the input attribute compiled as uniform?
     public abstract isUniform(name: string): boolean;
     // Update a uniform in the spec, on isUniform(name) == true.
     public abstract updateUniform(name: string, value: Specification.Value): void;
-    // Upload data to the shape.
-    public abstract uploadData(data: any[][]): PlatformShapeData;
+    // Upload data to the mark.
+    public abstract uploadData(data: any[][]): PlatformMarkData;
 
     // Render the graphics.
-    public abstract render(data: PlatformShapeData, onRender: (i: number) => void): void;
+    public abstract render(data: PlatformMarkData, onRender: (i: number) => void): void;
 }
 
 export class Viewport {
@@ -37,13 +36,13 @@ export class Viewport3D extends Viewport {
 }
 
 export abstract class Platform {
-    // Compile a shape specification to PlatformShape object.
+    // Compile a mark specification to PlatformMark object.
     public abstract compile(
-        shape: Shape,
-        spec: Specification.Shape,
+        mark: Mark,
+        spec: Specification.Mark,
         bindings: Dictionary<Binding>,
         shfitBindings: Dictionary<ShiftBinding>
-    ): PlatformShape;
+    ): PlatformMark;
 }
 
 let platformConstructors = new Dictionary<(...args: any[]) => Platform>();

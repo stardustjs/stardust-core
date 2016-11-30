@@ -1,4 +1,4 @@
-import { Specification } from "../spec";
+import { Specification } from "../spec/spec";
 import { ParseError } from "../exceptions";
 
 // Typescript definition of the parsed AST.
@@ -123,7 +123,7 @@ export module SyntaxTree {
 
     export interface FileBlockFunction extends FileBlock {
         type: "function";
-        isShape: boolean;
+        isMark: boolean;
         name: string;
         returnType: string;
         arguments: FunctionArgument[];
@@ -165,11 +165,11 @@ function stripComments(content: string): string {
     return content;
 }
 
-export function parseString(content: string): SyntaxTree.File {
+export function parseFile(content: string): SyntaxTree.File {
     content = stripComments(content);
     let result: SyntaxTree.File = null;
     try {
-        result = parser_pegjs.parse(content, { startRule: "Start" }) as SyntaxTree.File;
+        result = parser_pegjs.parse(content, { startRule: "File" }) as SyntaxTree.File;
     } catch(e) {
         if(e.location) {
             throw new ParseError(e.message, e.location.start, e.location.end);

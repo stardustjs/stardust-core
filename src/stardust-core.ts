@@ -1,16 +1,15 @@
 export let version = "0.0.1";
 
 // Math classes and utilities
-export * from "./core/utils";
-export * from "./core/math";
+export * from "./core/utils/utils";
+export * from "./core/math/math";
 
-// Shape class and shape specification
-export * from "./core/shapeModule";
-export * from "./core/shape";
-export * from "./core/binding";
-export * from "./core/spec";
-export * from "./core/intrinsics";
-export * from "./core/types";
+// Mark class and mark specification
+export * from "./core/mark/mark";
+export * from "./core/mark/marks";
+export * from "./core/binding/binding";
+export * from "./core/spec/spec";
+export * from "./core/intrinsics/intrinsics";
 export * from "./core/exceptions";
 
 // Parsing and compiling
@@ -25,7 +24,7 @@ export * from "./core/transform/transforms";
 export * from "./core/evaluator/evaluator";
 
 // Platform base class
-export * from "./core/platform";
+export * from "./core/platform/platform";
 
 // Scales
 export * from "./core/scale/scale";

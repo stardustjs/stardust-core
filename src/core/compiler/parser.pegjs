@@ -44,9 +44,9 @@
 }
 
 //
-// Shape Definition File
+// Mark Definition File
 //
-Start
+File
   = _ blocks:( FileBlock _ )*
     { return { blocks: blocks.map(function(d) { return d[0]; }) }; }
 
@@ -54,11 +54,11 @@ FileBlock
   = Function / GlobalVariable / ImportStatement
 
 Function
-  = type:("function" / "shape") __  name:Name _ "(" args:FunctionArgumentList ")" ret:(_ ":" _ Name)? _ "{" _ statements:Statements _ "}"
+  = type:("function" / "mark") __  name:Name _ "(" args:FunctionArgumentList ")" ret:(_ ":" _ Name)? _ "{" _ statements:Statements _ "}"
     {
       return {
         type: "function",
-        isShape: flatten(type) == "shape",
+        isMark: flatten(type) == "mark",
         name: name,
         returnType: ret ? ret[3] : "void",
         arguments: args,

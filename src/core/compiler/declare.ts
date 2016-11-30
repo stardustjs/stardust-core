@@ -1,10 +1,10 @@
-// Declare shape code with Javascript calls.
+// Declare mark code with Javascript calls.
 
-import { Dictionary } from "../utils";
-import { Specification } from "../spec";
+import { Dictionary } from "../utils/utils";
+import { Specification } from "../spec/spec";
 import { compileString } from "./compiler";
 
-export class CustomShapeItem {
+export class CustomMarkItem {
     private _name: string;
     private _attrs: Dictionary<string>;
 
@@ -13,7 +13,7 @@ export class CustomShapeItem {
         this._attrs = new Dictionary<string>();
     }
 
-    public attr(name: string, expression: string): CustomShapeItem {
+    public attr(name: string, expression: string): CustomMarkItem {
         this._attrs.set(name, expression);
         return this;
     }
@@ -27,11 +27,11 @@ export class CustomShapeItem {
     }
 }
 
-export class CustomShape {
+export class CustomMark {
     private _imports: [ string, string ][];
     private _inputs: [ string, string, string ][];
     private _variables: [ string, string ][];
-    private _items: CustomShapeItem[];
+    private _items: CustomMarkItem[];
 
     constructor() {
         this._imports = [];
@@ -40,33 +40,33 @@ export class CustomShape {
         this._items = [];
     }
 
-    public input(name: string, type: string, initial?: string): CustomShape {
+    public input(name: string, type: string, initial?: string): CustomMark {
         this._inputs.push([ name, type, initial ]);
         return this;
     }
 
-    public variable(name: string, expression: string): CustomShape {
+    public variable(name: string, expression: string): CustomMark {
         this._variables.push([ name, expression ]);
         return this;
     }
 
-    public add(name: string): CustomShapeItem {
-        let [ libraryName, shapeName ] = name.split(".");
+    public add(name: string): CustomMarkItem {
+        let [ libraryName, markName ] = name.split(".");
         let alreadyImported = false;
-        for(let [ lib, shape ] of this._imports) {
-            if(lib == libraryName && shape == shapeName) {
+        for(let [ lib, mark ] of this._imports) {
+            if(lib == libraryName && mark == markName) {
                 alreadyImported = true;
             }
         }
         if(!alreadyImported) {
-            this._imports.push([ libraryName, shapeName ]);
+            this._imports.push([ libraryName, markName ]);
         }
-        let item = new CustomShapeItem(shapeName);
+        let item = new CustomMarkItem(markName);
         this._items.push(item);
         return item;
     }
 
-    public generateCode(shapeName: string): string {
+    public generateCode(markName: string): string {
         let lines: string[] = [];
         for(let [ library, name ] of this._imports) {
             lines.push(`import ${name} from ${library};`);
@@ -80,7 +80,7 @@ export class CustomShape {
                 inputDefs.push(`${name}: ${type} = ${initial}`);
             }
         }
-        lines.push(`shape ${shapeName}(`);
+        lines.push(`mark ${markName}(`);
         lines.push(`    ${inputDefs.join(", ")}`);
         lines.push(`) {`);
         // Variables
@@ -94,21 +94,9 @@ export class CustomShape {
         return lines.join("\n");
     }
 
-    public compile(): Specification.Shape {
-        let code = this.generateCode("Shape");
+    public compile(): Specification.Mark {
+        let code = this.generateCode("Mark");
         let specs = compileString(code);
-        return specs["Shape"];
-    }
-
-    public static test() {
-        let g = new CustomShape();
-        g.input("x", "float").input("y", "float")
-        .add("P2D.Circle")
-            .attr("center", "Vector2(x, y)")
-            .attr("radius", "1")
-            .attr("color", "Color(0, 1, 0, 1)")
-        console.log(g.generateCode("Shape"));
-        console.log(g.compile());
-
+        return specs["Mark"];
     }
 }

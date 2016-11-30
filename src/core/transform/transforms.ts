@@ -1,1 +1,1 @@
-export { FlattenEmits } from "./flattener";
+export { flattenEmits } from "./flattener";

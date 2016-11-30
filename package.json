@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build:ts": "tsc -p src",
-    "build:pegjs": "pegjs --allowed-start-rules Start,Expression src/core/compiler/parser.pegjs dist/core/compiler/parser_pegjs.js",
+    "build:pegjs": "pegjs --allowed-start-rules File,Expression src/core/compiler/parser.pegjs dist/core/compiler/parser_pegjs.js",
     "build": "npm run build:ts && npm run build:pegjs",
     "test": "mocha test",
     "prepublish": "npm run build",

@@ -1,31 +1,31 @@
-import { compileString } from "./compiler/compiler";
-import { CustomShape } from "./compiler/declare";
-import { Shape } from "./shape";
-import { Specification } from "./spec";
-import { Platform } from "./platform";
+import { compileString } from "../compiler/compiler";
+import { CustomMark } from "../compiler/declare";
+import { Mark } from "./mark";
+import { Specification } from "../spec/spec";
+import { Platform } from "../platform/platform";
 
-export module shape {
-    export function create(spec: Specification.Shape, platform: Platform): Shape;
-    export function create(spec: CustomShape, platform: Platform): Shape;
-    export function create(spec: CustomShape | Specification.Shape, platform: Platform): Shape {
-        if(spec instanceof CustomShape) {
-            return new Shape(spec.compile(), platform);
+export module mark {
+    export function create(spec: Specification.Mark, platform: Platform): Mark;
+    export function create(spec: CustomMark, platform: Platform): Mark;
+    export function create(spec: CustomMark | Specification.Mark, platform: Platform): Mark {
+        if(spec instanceof CustomMark) {
+            return new Mark(spec.compile(), platform);
         } else {
-            return new Shape(spec, platform);
+            return new Mark(spec, platform);
         }
     }
 
-    export function custom(): CustomShape {
-        return new CustomShape();
+    export function custom(): CustomMark {
+        return new CustomMark();
     }
 
-    export function compile(code: string): Specification.ShapeSpecifications {
+    export function compile(code: string): Specification.Marks {
         return compileString(code);
     }
 
-    export function circle(sides: number = 32): Specification.Shape {
-        return shape.compile(`
-            shape Circle(
+    export function circle(sides: number = 32): Specification.Mark {
+        return mark.compile(`
+            mark Circle(
                 center: Vector2,
                 radius: float,
                 color: Color
@@ -45,9 +45,9 @@ export module shape {
         `)["Circle"];
     }
 
-    export function line(): Specification.Shape {
-        return shape.compile(`
-            shape Line(
+    export function line(): Specification.Mark {
+        return mark.compile(`
+            mark Line(
                 p1: Vector2,
                 p2: Vector2,
                 width: float = 1,
@@ -69,11 +69,11 @@ export module shape {
         `)["Line"];
     }
 
-    export function polyline(): Specification.Shape {
-        let spec = shape.compile(`
+    export function polyline(): Specification.Mark {
+        let spec = mark.compile(`
             import Triangle from P2D;
 
-            shape Sector2(
+            mark Sector2(
                 c: Vector2,
                 p1: Vector2,
                 p2: Vector2,
@@ -84,7 +84,7 @@ export module shape {
                 Triangle(c, pc, p2, color);
             }
 
-            shape Sector4(
+            mark Sector4(
                 c: Vector2,
                 p1: Vector2,
                 p2: Vector2,
@@ -95,7 +95,7 @@ export module shape {
                 Sector2(c, pc, p2, color);
             }
 
-            shape PolylineRound(
+            mark PolylineRound(
                 p: Vector2, p_p: Vector2, p_n: Vector2, p_nn: Vector2,
                 width: float,
                 color: Color = [ 0, 0, 0, 1 ]

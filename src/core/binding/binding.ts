@@ -1,9 +1,8 @@
 // binding.js:
 // Take care of data binding.
 
-import { types, Type } from "./types";
-import { Specification } from "./spec";
-import { MathType } from "./math";
+import { Specification, types, Type } from "../spec/spec";
+import { MathType } from "../math/math";
 
 // Primitives are immediate values, including number, number array, Vector, Quaternion and Color.
 export type BindingPrimitive = Specification.Value | MathType;

@@ -1,7 +1,7 @@
-import { Specification } from "../spec";
+import { Specification } from "../spec/spec";
 
 export abstract class Optimizer {
-    public abstract optimize(shape: Specification.Shape): Specification.Shape;
+    public abstract optimize(mark: Specification.Mark): Specification.Mark;
 }
 
 export class OptimizerList extends Optimizer {
@@ -10,8 +10,8 @@ export class OptimizerList extends Optimizer {
         super();
         this._optimizers = args;
     }
-    public optimize(shape: Specification.Shape): Specification.Shape {
-        let s = shape;
+    public optimize(mark: Specification.Mark): Specification.Mark {
+        let s = mark;
         for(let optimizer of this._optimizers) {
             s = optimizer.optimize(s);
         }

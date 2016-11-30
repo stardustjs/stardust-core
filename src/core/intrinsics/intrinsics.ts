@@ -1,6 +1,6 @@
-import {Specification} from "./spec";
-import {Dictionary} from "./utils";
-import {Quaternion, Vector2, Vector3} from "./math";
+import {Specification} from "../spec/spec";
+import {Dictionary} from "../utils/utils";
+import {Quaternion, Vector2, Vector3} from "../math/math";
 
 export type IntrinsicFunction = (...args: Specification.Value[]) => Specification.Value;
 

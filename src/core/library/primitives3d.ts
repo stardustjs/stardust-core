@@ -1,5 +1,5 @@
 export let primitives = `
-    shape Triangle(
+    mark Triangle(
         p1: Vector3,
         p2: Vector3,
         p3: Vector3,
@@ -13,7 +13,7 @@ export let primitives = `
         ];
     }
 
-    shape Tetrahedron(
+    mark Tetrahedron(
         p1: Vector3,
         p2: Vector3,
         p3: Vector3,
@@ -25,7 +25,7 @@ export let primitives = `
         Triangle(p2, p3, p4);
     }
 
-    shape Cube(
+    mark Cube(
         center: Vector3,
         radius: float,
         color: Color

@@ -1,11 +1,11 @@
 // Prebuilt scales.
-import { Dictionary } from "../utils";
+import { Dictionary } from "../utils/utils";
 import { compileExpression } from "../compiler/compiler";
 import { parseExpression } from "../compiler/parser";
-import { Specification } from "../spec";
-import { BindingValue, BindingPrimitive } from "../binding";
+import { Specification } from "../spec/spec";
+import { BindingValue, BindingPrimitive } from "../binding/binding";
 import { ScaleArgument, ScaleBinding, Scale, DomainRangeScale, CustomScale, ScaleAttributeInfo } from "./scale";
-import * as SC from "../specConstruct";
+import * as SC from "../spec/construct";
 
 export module scale {
     export function linear(valueType: string = "float"): DomainRangeScale {

@@ -1,8 +1,8 @@
-import { Specification } from "../spec";
+import { Specification } from "../spec/spec";
 import { CompileError } from "../exceptions";
-import { SyntaxTree, parseString } from "./parser";
-import { Dictionary, attemptName } from "../utils";
-import * as Intrinsics from "../intrinsics";
+import { SyntaxTree, parseFile } from "./parser";
+import { Dictionary, attemptName } from "../utils/utils";
+import * as Intrinsics from "../intrinsics/intrinsics";
 import * as Library from "../library/library";
 
 export interface ScopeVariableInfo {
@@ -312,7 +312,7 @@ export class Compiler {
         Intrinsics.forEachIntrinsicFunction((info) => {
             this.addIntrinsicFunction(info.name, {
                 type: "function",
-                isShape: false,
+                isMark: false,
                 name: info.internalName,
                 returnType: info.returnType,
                 arguments: info.argTypes.map((x, idx) => { return { name: "a" + idx, type: x }}),
@@ -343,26 +343,26 @@ export class Compiler {
         }
     }
 
-    public compileFunctionToShape(globals: SyntaxTree.FileBlockGlobal[], block: SyntaxTree.FileBlockFunction): Specification.Shape {
+    public compileFunctionToMark(globals: SyntaxTree.FileBlockGlobal[], block: SyntaxTree.FileBlockFunction): Specification.Mark {
         // Re-init state.
         this._scope.resetScope();
         this._lastIndex = 1;
 
-        let shapeInput: { [name: string]: Specification.Input } = {};
-        let shapeOutput: { [name: string]: Specification.Output } = {};
-        let shapeVariables: { [name: string]: string } = {};
+        let markInput: { [name: string]: Specification.Input } = {};
+        let markOutput: { [name: string]: Specification.Output } = {};
+        let markVariables: { [name: string]: string } = {};
 
         // Setup input parameters.
         for(let global of globals) {
             this._scope.addVariable(global.name, global.valueType, "global");
-            shapeInput[global.name] = {
+            markInput[global.name] = {
                 type: global.valueType,
                 default: global.default
             }
         }
         for(let arg of block.arguments) {
             this._scope.addVariable(arg.name, arg.type, "local");
-            shapeInput[arg.name] = {
+            markInput[arg.name] = {
                 type: arg.type,
                 default: arg.default
             }
@@ -376,8 +376,8 @@ export class Compiler {
 
         // Figure out variables.
         this._scope.forEach((name: string, type: string) => {
-            if(!shapeInput[name]) {
-                shapeVariables[name] = type;
+            if(!markInput[name]) {
+                markVariables[name] = type;
             }
         });
 
@@ -387,12 +387,12 @@ export class Compiler {
                 if(x.type == "emit") {
                     let sEmit = x as Specification.StatementEmit;
                     for(let attr in sEmit.attributes) {
-                        if(shapeOutput.hasOwnProperty(attr)) {
-                            if(shapeOutput[attr].type != sEmit.attributes[attr].valueType) {
+                        if(markOutput.hasOwnProperty(attr)) {
+                            if(markOutput[attr].type != sEmit.attributes[attr].valueType) {
                                 throw new CompileError(`output variable '${attr} has conflicting types.`);
                             }
                         } else {
-                            shapeOutput[attr] = { type: sEmit.attributes[attr].valueType };
+                            markOutput[attr] = { type: sEmit.attributes[attr].valueType };
                         }
                     }
                 }
@@ -410,9 +410,9 @@ export class Compiler {
         processStatementsForOutputs(this._statements);
 
         return {
-            input: shapeInput,
-            output: shapeOutput,
-            variables: shapeVariables,
+            input: markInput,
+            output: markOutput,
+            variables: markVariables,
             statements: this._statements
         }
     }
@@ -713,17 +713,17 @@ export class Compiler {
     }
 }
 
-export function compileTree(file: SyntaxTree.File): Specification.ShapeSpecifications {
-    let spec: Specification.ShapeSpecifications = {};
+export function compileTree(file: SyntaxTree.File): Specification.Marks {
+    let spec: Specification.Marks = {};
     let globals = file.blocks.filter((x) => x.type == "global") as SyntaxTree.FileBlockGlobal[];
     for(let block of file.blocks) {
         if(block.type == "function") {
             let blockFunction = block as SyntaxTree.FileBlockFunction;
-            if(blockFunction.isShape) {
+            if(blockFunction.isMark) {
                 let scope = new Compiler();
                 scope.loadFile(file);
-                let shape = scope.compileFunctionToShape(globals, blockFunction);
-                spec[blockFunction.name] = shape;
+                let mark = scope.compileFunctionToMark(globals, blockFunction);
+                spec[blockFunction.name] = mark;
             }
         }
     }
@@ -735,7 +735,7 @@ export function compileExpression(expr: SyntaxTree.Expression, variables: Dictio
     return standaloneCompiler.compileStandaloneExpression(expr, variables);
 }
 
-export function compileString(content: string): Specification.ShapeSpecifications {
-    let file = parseString(content);
+export function compileString(content: string): Specification.Marks {
+    let file = parseFile(content);
     return compileTree(file);
 }

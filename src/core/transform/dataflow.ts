@@ -1,13 +1,6 @@
-import { Specification } from "../spec";
+import { Specification } from "../spec/spec";
 
 export class DataflowExtractor {
-    public extract(shape: Specification.Shape) {
+    public extract(mark: Specification.Mark) {
     }
 }
-
-/*
-
-shape: instructions , inputs
-
-
-*/

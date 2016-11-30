@@ -91,7 +91,7 @@ export module Specification {
         falseStatements: Statement[];   // statements to execute when condition is false.
     }
 
-    export interface Shape {
+    export interface Mark {
         input: { [name: string]: Input };
         output: { [name: string]: Output };
         variables: { [name: string]: ValueType };
@@ -100,7 +100,23 @@ export module Specification {
         repeatEnd?: number;
     }
 
-    export interface ShapeSpecifications {
-        [name: string]: Shape;
+    export interface Marks {
+        [name: string]: Mark;
     }
+}
+
+export interface Type {
+    name: string;
+    size: number;
+    primitive: string;
+    primitiveCount: number;
+}
+
+export let types: { [name: string]: Type; } = {
+    "float": { name: "float", size: 4, primitive: "float", primitiveCount: 1 },
+    "int": { name: "int", size: 4, primitive: "int", primitiveCount: 1 },
+    "Vector2": { name: "Vector2", size: 8, primitive: "float", primitiveCount: 2 },
+    "Vector3": { name: "Vector3", size: 12, primitive: "float", primitiveCount: 3 },
+    "Quaternion": { name: "Quaternion", size: 16, primitive: "float", primitiveCount: 4 },
+    "Color": { name: "Color", size: 16, primitive: "float", primitiveCount: 4 }
 }

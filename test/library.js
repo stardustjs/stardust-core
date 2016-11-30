@@ -1,31 +1,31 @@
 let Stardust = require("../dist/stardust-core");
 
 describe('Library', () => {
-    it("Predefined Shapes", () => {
+    it("Predefined Marks", () => {
         let specs = {};
-        specs["line"] = Stardust.shape.line();
-        specs["circle"] = Stardust.shape.circle(16);
-        specs["polyline"] = Stardust.shape.polyline();
+        specs["line"] = Stardust.mark.line();
+        specs["circle"] = Stardust.mark.circle(16);
+        specs["polyline"] = Stardust.mark.polyline();
     });
 
-    it("Custom Shapes", () => {
-        let shape = Stardust.shape.custom();
-        shape
+    it("Custom Marks", () => {
+        let mark = Stardust.mark.custom();
+        mark
             .input("x", "float")
             .input("y", "float")
             .variable("z", "x + y")
-        shape.add("P2D.Circle")
+        mark.add("P2D.Circle")
             .attr("center", "Vector2(x, y)")
             .attr("radius", "z")
             .attr("color", "Color(x, y, z, 1)")
-        shape.compile();
+        mark.compile();
     });
 
-    it("Compiled Shapes", () => {
-        let shape = Stardust.shape.compile(`
+    it("Compiled Marks", () => {
+        let mark = Stardust.mark.compile(`
             import Triangle from P3D;
 
-            shape Point(
+            mark Point(
                 center: Vector3,
                 size: float,
                 color: Color
@@ -40,7 +40,7 @@ describe('Library', () => {
                 Triangle(p4, p3, p1, color);
             }
 
-            shape Line(
+            mark Line(
                 p1: Vector3, p2: Vector3,
                 size: float,
                 color: Color
@@ -74,7 +74,7 @@ describe('Library', () => {
                 return Vector3(x, y, z);
             }
 
-            shape Glyph(
+            mark Glyph(
                 year: float,
                 dayOfYear: float,
                 secondOfDay: float,
@@ -87,7 +87,7 @@ describe('Library', () => {
                 Point(p * (1 - t) + p2 * t, log(1 + duration) / 2, color = color);
             }
 
-            shape LineChart(
+            mark LineChart(
                 year1: float,
                 dayOfYear1: float,
                 secondOfDay1: float,
@@ -114,20 +114,20 @@ describe('Library', () => {
 
 describe('Transforms', () => {
     it("FlattenEmits", () => {
-        Stardust.FlattenEmits(Stardust.shape.circle(16));
-        Stardust.FlattenEmits(Stardust.shape.polyline());
+        Stardust.FlattenEmits(Stardust.mark.circle(16));
+        Stardust.FlattenEmits(Stardust.mark.polyline());
     });
 });
 
-describe('Parser', () => {
-    it("Expression", () => {
-        let expr = Stardust.parseExpression("1 + 3 + 5 + 34.2 - sin(a) + cos(b - c + d)")
-        let d = new Stardust.Dictionary();
-        d.set("a", { type: "constant", valueType: "float", value: 3 });
-        d.set("b", { type: "constant", valueType: "float", value: 4 });
-        d.set("c", { type: "constant", valueType: "float", value: 5 });
-        d.set("d", { type: "constant", valueType: "float", value: 6 });
-        let e = Stardust.compileExpression(expr, d);
-        console.log(e);
-    });
-});
+// describe('Parser', () => {
+//     it("Expression", () => {
+//         let expr = Stardust.parseExpression("1 + 3 + 5 + 34.2 - sin(a) + cos(b - c + d)")
+//         let d = new Stardust.Dictionary();
+//         d.set("a", { type: "constant", valueType: "float", value: 3 });
+//         d.set("b", { type: "constant", valueType: "float", value: 4 });
+//         d.set("c", { type: "constant", valueType: "float", value: 5 });
+//         d.set("d", { type: "constant", valueType: "float", value: 6 });
+//         let e = Stardust.compileExpression(expr, d);
+//         console.log(e);
+//     });
+// });
