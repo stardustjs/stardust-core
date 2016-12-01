@@ -4,7 +4,7 @@ import { compileExpression } from "../compiler/compiler";
 import { parseExpression } from "../compiler/parser";
 import { Specification } from "../spec/spec";
 import { BindingValue, BindingPrimitive } from "../binding/binding";
-import { ScaleArgument, ScaleBinding, Scale, DomainRangeScale, CustomScale, ScaleAttributeInfo } from "./scale";
+import { ScaleArgument, ScaleBinding, Scale, DomainRangeScale, InterpolateScale, CustomScale, ScaleAttributeInfo } from "./scale";
 import * as SC from "../spec/construct";
 
 export module scale {
@@ -146,6 +146,34 @@ export module scale {
     export function div(value1: ScaleArgument, value2: ScaleArgument) {
         return divScale()(value1, value2);
     }
+
+    export function interpolate(valueType: string = "float"): InterpolateScale {
+        let scale = ((...args: ScaleArgument[]): ScaleBinding => {
+            return new ScaleBinding(scale, valueType, [ valueType, valueType ], ...args);
+        }) as InterpolateScale;
+
+        let t: BindingValue;
+
+        scale.t = (value?: BindingValue) => {
+            if(value == null) return t;
+            t = value;
+            return scale;
+        };
+
+        scale.getAttributes = () => {
+            return [
+                { name: "t", type: "float", binding: t }
+            ];
+        };
+        scale.getExpression = (attrs, value1, value2) => {
+            return SC.mix(
+                value1, value2,
+                attrs["t"]
+            );
+        }
+        return scale;
+    }
+
     export function Vector2(value1: ScaleArgument, value2: ScaleArgument) {
         return vector2Scale()(value1, value2);
     }

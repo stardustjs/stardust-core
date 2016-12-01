@@ -192,6 +192,12 @@ RegisterFunction("ceil", [ "float" ], "float", (a: number, b: number) => Math.ce
 RegisterFunction("floor", [ "float" ], "float", (a: number, b: number) => Math.floor(a));
 
 RegisterFunction("mix", [ "float", "float", "float" ], "float", (a: number, b: number, t: number) => a + (b - a) * t);
+RegisterFunction("mix", [ "Vector2", "Vector2", "float" ], "Vector2", null); // TODO
+RegisterFunction("mix", [ "Vector3", "Vector3", "float" ], "Vector3", null);
+RegisterFunction("mix", [ "Vector4", "Vector4", "float" ], "Vector4", null);
+RegisterFunction("mix", [ "Color", "Color", "float" ], "Color", null);
+
+RegisterFunction("clamp", [ "float" ], "float", (a: number) => Math.max(0, Math.min(1, a)));
 
 // Vector functions.
 RegisterFunction("dot", [ "Vector2", "Vector2" ], "float", (a: number[], b: number[]) => a[0] * b[0] + a[1] * b[1]);

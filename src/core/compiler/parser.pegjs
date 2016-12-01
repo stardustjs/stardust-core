@@ -46,9 +46,13 @@
 //
 // Mark Definition File
 //
-File
+FileEntry
   = _ blocks:( FileBlock _ )*
     { return { blocks: blocks.map(function(d) { return d[0]; }) }; }
+
+ExpressionEntry
+  = _ expr:Expression _
+    { return expr; }
 
 FileBlock
   = Function / GlobalVariable / ImportStatement

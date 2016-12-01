@@ -114,8 +114,8 @@ describe('Library', () => {
 
 describe('Transforms', () => {
     it("FlattenEmits", () => {
-        Stardust.FlattenEmits(Stardust.mark.circle(16));
-        Stardust.FlattenEmits(Stardust.mark.polyline());
+        Stardust.flattenEmits(Stardust.mark.circle(16));
+        Stardust.flattenEmits(Stardust.mark.polyline());
     });
 });
 

@@ -169,7 +169,7 @@ export function parseFile(content: string): SyntaxTree.File {
     content = stripComments(content);
     let result: SyntaxTree.File = null;
     try {
-        result = parser_pegjs.parse(content, { startRule: "File" }) as SyntaxTree.File;
+        result = parser_pegjs.parse(content, { startRule: "FileEntry" }) as SyntaxTree.File;
     } catch(e) {
         if(e.location) {
             throw new ParseError(e.message, e.location.start, e.location.end);
@@ -183,7 +183,7 @@ export function parseFile(content: string): SyntaxTree.File {
 export function parseExpression(content: string): SyntaxTree.Expression {
     let result: SyntaxTree.Expression = null;
     try {
-        result = parser_pegjs.parse(content, { startRule: "Expression" }) as SyntaxTree.Expression;
+        result = parser_pegjs.parse(content, { startRule: "ExpressionEntry" }) as SyntaxTree.Expression;
     } catch(e) {
         if(e.location) {
             throw new ParseError(e.message, e.location.start, e.location.end);
