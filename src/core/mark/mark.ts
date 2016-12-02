@@ -1,6 +1,6 @@
 import { Specification } from "../spec/spec";
 import { Platform, PlatformMark, PlatformMarkData } from "../platform/platform";
-import { Binding, ShiftBinding, BindingValue, BindingPrimitive, getBindingValue } from "../binding/binding";
+import { Binding, ShiftBinding, BindingValue, BindingType, TextureBinding, BindingPrimitive, getBindingValue } from "../binding/binding";
 import { RuntimeError } from "../exceptions";
 import { Dictionary, shallowClone } from "../utils/utils";
 import { ScaleBinding } from "../scale/scale";
@@ -100,8 +100,13 @@ export class Mark {
                 if(this._platformMark) {
                     // Recompile if the input was compiled as input,
                     // and the new binding is not a function.
-                    if(this._platformMark.isUniform(name) && !newBinding.isFunction) {
-                        this._platformMark.updateUniform(name, newBinding.specValue);
+                    if(this._platformMark.isUniform(name) && newBinding.bindingType != BindingType.FUNCTION) {
+                        if(newBinding.bindingType == BindingType.VALUE) {
+                            this._platformMark.updateUniform(name, newBinding.specValue);
+                        }
+                        if(newBinding.bindingType == BindingType.TEXTURE) {
+                            this._platformMark.updateTexture(name, newBinding.textureValue);
+                        }
                     } else {
                         this._platformMark = null;
                     }
@@ -177,7 +182,7 @@ export class Mark {
                         let shiftAttrs: { [ name: string ]: Specification.Expression } = {};
                         attributes.forEach((attr) => {
                             let bindedName = name + attr.bindedName;
-                            if(newBindings.get(bindedName).isFunction) {
+                            if(newBindings.get(bindedName).bindingType == BindingType.FUNCTION) {
                                 let shiftBindedName = bindedName + suffix;
                                 shiftBindings.set(shiftBindedName, new ShiftBinding(bindedName, shift));
                                 shiftAttrs[attr.bindedName] = {
@@ -225,7 +230,11 @@ export class Mark {
                 let attributes = binding.getAttributes();
                 let attrs: { [ name: string ]: Specification.Expression } = {};
                 attributes.forEach((attr) => {
-                    this._platformMark.updateUniform(name + attr.bindedName, attr.binding as Specification.Value);
+                    if(attr.binding instanceof TextureBinding) {
+                        this._platformMark.updateTexture(name + attr.bindedName, attr.binding);
+                    } else {
+                        this._platformMark.updateUniform(name + attr.bindedName, attr.binding as Specification.Value);
+                    }
                 });
             }
         });

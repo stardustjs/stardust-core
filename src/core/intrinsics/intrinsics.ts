@@ -263,3 +263,8 @@ addConstant("PI", "float", Math.PI);
 addConstant("SQRT2", "float", Math.SQRT2);
 addConstant("SQRT1_2", "float", Math.SQRT1_2);
 addConstant("RED", "Color", [ 1, 0, 0, 1 ]);
+
+RegisterFunction("array", [ "FloatArray", "float" ], "float", (color: number[]) => color);
+RegisterFunction("array", [ "Vector2Array", "float" ], "Vector2", (color: number[]) => color);
+RegisterFunction("array", [ "Vector3Array", "float" ], "Vector3", (color: number[]) => color);
+RegisterFunction("array", [ "Vector4Array", "float" ], "Vector4", (color: number[]) => color);

@@ -1,5 +1,5 @@
 import { Specification } from "../spec/spec";
-import { Binding, ShiftBinding } from "../binding/binding";
+import { Binding, ShiftBinding, TextureBinding } from "../binding/binding";
 import { Dictionary } from "../utils/utils";
 import { Mark } from "../mark/mark";
 
@@ -10,6 +10,7 @@ export abstract class PlatformMark {
     public abstract isUniform(name: string): boolean;
     // Update a uniform in the spec, on isUniform(name) == true.
     public abstract updateUniform(name: string, value: Specification.Value): void;
+    public abstract updateTexture(name: string, value: TextureBinding): void;
     // Upload data to the mark.
     public abstract uploadData(data: any[][]): PlatformMarkData;
 

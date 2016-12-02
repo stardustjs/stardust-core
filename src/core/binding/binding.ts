@@ -3,29 +3,12 @@
 
 import { Specification, types, Type } from "../spec/spec";
 import { MathType } from "../math/math";
+import { TextureBinding } from "./array";
+import { RuntimeError } from "../exceptions";
+import { BindingValue, BindingPrimitive, BindingType, BindingFunction, getBindingValue } from "./types";
 
-// Primitives are immediate values, including number, number array, Vector, Quaternion and Color.
-export type BindingPrimitive = Specification.Value | MathType;
-// Binding functions map data items to binding primitives.
-export type BindingFunction = (data?: any, index?: number) => BindingPrimitive;
-// Binding value is either a primitive, a function or a scale binding.
-export type BindingValue = BindingPrimitive | BindingFunction;
-
-// Resolve binding primitives to Value (Value = number or number[]).
-export function getBindingValue(value: BindingPrimitive): Specification.Value {
-    if(value instanceof MathType) {
-        return value.toArray();
-    } else {
-        return value;
-    }
-}
-
-export class ShiftBinding {
-    constructor(
-        public name: string,
-        public offset: number
-    ) { }
-}
+export * from "./types";
+export * from "./array";
 
 // The main binding class.
 export class Binding {
@@ -37,51 +20,65 @@ export class Binding {
         this._value = value;
     }
 
-    public get typeName(): string {
-        return this._type.name;
-    }
-
-    public get type(): Type {
+    public get valueType(): Type {
         return this._type;
-    }
-
-    public get size(): number {
-        return this._type.size;
     }
 
     public get value(): BindingValue {
         return this._value;
     }
 
-    public get isFunction(): boolean {
-        return typeof(this._value) == "function";
+    public get bindingType(): BindingType {
+        if(this._value instanceof TextureBinding) {
+            return BindingType.TEXTURE;
+        }
+        if(typeof(this._value) == "function") {
+            return BindingType.FUNCTION;
+        }
+        return BindingType.VALUE;
     }
 
     public get specValue(): Specification.Value {
         return getBindingValue(this._value as BindingPrimitive);
     }
 
+    public get textureValue(): TextureBinding {
+        return this._value as TextureBinding;
+    }
+
     public forEach(data: any[], callback: (value: Specification.Value, i: number) => any) {
-        if(this.isFunction) {
-            let f = this._value as BindingFunction;
-            for(var i = 0; i < data.length; i++) {
-                callback(getBindingValue(f(data[i], i)), i);
-            }
-        } else {
-            let value = getBindingValue(this._value as BindingPrimitive);
-            for(var i = 0; i < data.length; i++) {
-                callback(value, i);
+        switch(this.bindingType) {
+            case BindingType.FUNCTION: {
+                let f = this._value as BindingFunction;
+                for(var i = 0; i < data.length; i++) {
+                    callback(getBindingValue(f(data[i], i)), i);
+                }
+            } break;
+            case BindingType.VALUE: {
+                let value = getBindingValue(this._value as BindingPrimitive);
+                for(var i = 0; i < data.length; i++) {
+                    callback(value, i);
+                }
+            } break;
+            case BindingType.TEXTURE: {
+                throw new RuntimeError("Texture binding does not support for each");
             }
         }
     }
 
     public map(data: any[]): Specification.Value[] {
-        if(this.isFunction) {
-            let f = this._value as BindingFunction;
-            return data.map((d, i) => getBindingValue(f(d, i)));
-        } else {
-            let value = getBindingValue(this._value as BindingPrimitive);
-            return data.map(() => value);
+        switch(this.bindingType) {
+            case BindingType.FUNCTION: {
+                let f = this._value as BindingFunction;
+                return data.map((d, i) => getBindingValue(f(d, i)));
+            }
+            case BindingType.VALUE: {
+                let value = getBindingValue(this._value as BindingPrimitive);
+                return data.map(() => value);
+            }
+            case BindingType.TEXTURE: {
+                throw new RuntimeError("Texture binding does not support for map");
+            }
         }
     }
 
@@ -89,43 +86,49 @@ export class Binding {
         let n = data.length;
         let p = this._type.primitiveCount;
         let ptr = 0;
-        if(this.isFunction) {
-            let f = this._value as BindingFunction;
-            if(p == 1) {
-                for(let i = 0; i < n; i++) {
-                    let result = getBindingValue(f(data[i], i)) as number;
-                    for(let k = 0; k < rep; k++) {
-                        array[ptr++] = result;
+        switch(this.bindingType) {
+            case BindingType.FUNCTION: {
+                let f = this._value as BindingFunction;
+                if(p == 1) {
+                    for(let i = 0; i < n; i++) {
+                        let result = getBindingValue(f(data[i], i)) as number;
+                        for(let k = 0; k < rep; k++) {
+                            array[ptr++] = result;
+                        }
                     }
-                }
-            } else {
-                for(let i = 0; i < n; i++) {
-                    let result = getBindingValue(f(data[i], i)) as number[];
-                    for(let k = 0; k < rep; k++) {
-                        for(let j = 0; j < p; j++) {
-                            array[ptr++] = result[j];
+                } else {
+                    for(let i = 0; i < n; i++) {
+                        let result = getBindingValue(f(data[i], i)) as number[];
+                        for(let k = 0; k < rep; k++) {
+                            for(let j = 0; j < p; j++) {
+                                array[ptr++] = result[j];
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            let value = getBindingValue(this._value as BindingPrimitive);
-            if(p == 1) {
-                let v = value as number;
-                for(let i = 0; i < n; i++) {
-                    for(let k = 0; k < rep; k++) {
-                        array[ptr++] = v;
+            } break;
+            case BindingType.VALUE: {
+                let value = getBindingValue(this._value as BindingPrimitive);
+                if(p == 1) {
+                    let v = value as number;
+                    for(let i = 0; i < n; i++) {
+                        for(let k = 0; k < rep; k++) {
+                            array[ptr++] = v;
+                        }
                     }
-                }
-            } else {
-                let v = value as number[];
-                for(let i = 0; i < n; i++) {
-                    for(let k = 0; k < rep; k++) {
-                        for(let j = 0; j < p; j++) {
-                            array[ptr++] = v[j];
+                } else {
+                    let v = value as number[];
+                    for(let i = 0; i < n; i++) {
+                        for(let k = 0; k < rep; k++) {
+                            for(let j = 0; j < p; j++) {
+                                array[ptr++] = v[j];
+                            }
                         }
                     }
                 }
+            } break;
+            case BindingType.TEXTURE: {
+                throw new RuntimeError("Texture binding does not support for fillBinary");
             }
         }
     }

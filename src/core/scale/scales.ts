@@ -193,11 +193,14 @@ export module scale {
 
         let attributes = new Dictionary<{ type: string, value: BindingValue }>();
 
-        scale.attr = (name: string, value: BindingValue) => {
-            if(value == null) {
+        scale.attr = (name: string, typeOrValue: string | BindingValue, value?: BindingValue) => {
+            if(typeOrValue == null && value == null) {
                 return attributes.get(name).value;
+            } else if(typeof(typeOrValue) == "string") {
+                attributes.set(name, { type: typeOrValue, value: value });
+                return scale;
             } else {
-                attributes.set(name, { type: "float", value: value });
+                attributes.set(name, { type: "float", value: typeOrValue as BindingValue });
                 return scale;
             }
         };
