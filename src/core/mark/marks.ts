@@ -26,9 +26,9 @@ export module mark {
     export function circle(sides: number = 32): Specification.Mark {
         return mark.compile(`
             mark Circle(
-                center: Vector2,
-                radius: float,
-                color: Color
+                center: Vector2 = [ 0, 0 ],
+                radius: float = 1,
+                color: Color = [ 0, 0, 0, 1 ]
             ) {
                 for(i in 0..${sides - 1}) {
                     let a1 = i / ${sides.toFixed(1)} * PI * 2.0;
@@ -45,11 +45,32 @@ export module mark {
         `)["Circle"];
     }
 
+    export function rect(): Specification.Mark {
+        return mark.compile(`
+            mark Rectangle(
+                p1: Vector2 = [ 0, 0 ],
+                p2: Vector2 = [ 0, 0 ],
+                color: Color = [ 0, 0, 0, 1 ]
+            ) {
+                emit [
+                    { position: Vector2(p1.x, p1.y), color: color },
+                    { position: Vector2(p2.x, p1.y), color: color },
+                    { position: Vector2(p2.x, p2.y), color: color }
+                ];
+                emit [
+                    { position: Vector2(p1.x, p1.y), color: color },
+                    { position: Vector2(p1.x, p2.y), color: color },
+                    { position: Vector2(p2.x, p2.y), color: color }
+                ];
+            }
+        `)["Rectangle"];
+    }
+
     export function line(): Specification.Mark {
         return mark.compile(`
             mark Line(
-                p1: Vector2,
-                p2: Vector2,
+                p1: Vector2 = [ 0, 0 ],
+                p2: Vector2 = [ 0, 0 ],
                 width: float = 1,
                 color: Color = [ 0, 0, 0, 1 ]
             ) {
@@ -67,6 +88,50 @@ export module mark {
                 ];
             }
         `)["Line"];
+    }
+
+    export function wedge(sides: number = 60): Specification.Mark {
+        return mark.compile(`
+            import Triangle from P2D;
+
+            mark Wedge(
+                p1: Vector2 = [ 0, 0 ],
+                theta1: float = 0,
+                theta2: float = 0,
+                length: float = 10,
+                width: float = 1,
+                color: Color = [ 0, 0, 0, 1 ]
+            ) {
+                let dTheta = (theta2 - theta1) / 60;
+                let dL = length / 60;
+                for(i in 0..59) {
+                    let dThetaA = i * dTheta;
+                    let dThetaB = (i + 1) * dTheta;
+                    let thetaA = theta1 + dThetaA;
+                    let thetaB = theta1 + dThetaB;
+                    let thetaCenterA = theta1 + dThetaA / 2;
+                    let thetaCenterB = theta1 + dThetaB / 2;
+                    let dlA = dL * i;
+                    let dlB = dL * (i + 1);
+                    if(dThetaA > 1e-5 || dThetaA < -1e-5) {
+                        dlA = dlA / dThetaA * 2 * sin(dThetaA / 2);
+                    }
+                    if(dThetaB > 1e-5 || dThetaB < -1e-5) {
+                        dlB = dlB / dThetaB * 2 * sin(dThetaB / 2);
+                    }
+                    let pAdvA = Vector2(-sin(thetaCenterA), cos(thetaCenterA)) * dlA;
+                    let pAdvB = Vector2(-sin(thetaCenterB), cos(thetaCenterB)) * dlB;
+                    let pA = p1 + pAdvA;
+                    let pB = p1 + pAdvB;
+
+                    let dpA = Vector2(cos(thetaA), sin(thetaA)) * width * 0.5;
+                    let dpB = Vector2(cos(thetaB), sin(thetaB)) * width * 0.5;
+
+                    Triangle(pA + dpA, pB + dpB, pB - dpB, color);
+                    Triangle(pA + dpA, pB - dpB, pA - dpA, color);
+                }
+            }
+        `)["Wedge"];
     }
 
     export function polyline(): Specification.Mark {
@@ -97,7 +162,7 @@ export module mark {
 
             mark PolylineRound(
                 p: Vector2, p_p: Vector2, p_n: Vector2, p_nn: Vector2,
-                width: float,
+                width: float = 1,
                 color: Color = [ 0, 0, 0, 1 ]
             ) {
                 let EPS = 1e-5;

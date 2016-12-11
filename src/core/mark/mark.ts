@@ -7,13 +7,10 @@ import { ScaleBinding } from "../scale/scale";
 
 export type MarkBinding = Binding | ScaleBinding;
 
-export interface InstanceInformation {
-    data: any[];
-    attrs?: { [ name: string ]: BindingPrimitive };
-    onRender?: (datum: any, index: number, data: any[]) => any;
-};
-
-export type InstanceFunction = (datum: any, index: number, data: any[]) => InstanceInformation;
+export interface InstanceFunctions {
+    datum: (datum: any, index: number, data: any[]) => any[];
+    attrs: (datum: any, index: number, data: any[]) => { [ name: string ]: BindingPrimitive };
+}
 
 let shiftBindingDescriptions = [
     { shift: -2, suffix: "_pp" },
@@ -28,7 +25,7 @@ export class Mark {
     private _bindings: Dictionary<MarkBinding>;
     private _shiftBindings: Dictionary<ShiftBinding>;
     private _data: any[];
-    private _instanceFunction: InstanceFunction;
+    private _instanceFunctions: InstanceFunctions;
     private _platformMark: PlatformMark;
     private _platformMarkData: PlatformMarkData;
     private _shouldUploadData: boolean;
@@ -41,7 +38,7 @@ export class Mark {
         this._shiftBindings = new Dictionary<ShiftBinding>();
         this._platformMark = null;
         this._shouldUploadData = true;
-        this._instanceFunction = null;
+        this._instanceFunctions = null;
 
         // Set bindings to default value whenever exists.
         for(let name in this._spec.input) {
@@ -129,11 +126,14 @@ export class Mark {
         }
     }
 
-    public instance(func?: InstanceFunction): Mark | any {
-        if(func === undefined) {
-            return this._instanceFunction;
+    public instance(datum?: (datum: any, index: number, data: any[]) => any[], attrs?: (datum: any, index: number, data: any[]) => { [ name: string ]: BindingPrimitive }): Mark | InstanceFunctions {
+        if(datum === undefined && attrs === undefined) {
+            return this._instanceFunctions;
         } else {
-            this._instanceFunction = func;
+            this._instanceFunctions = {
+                datum: datum,
+                attrs: attrs
+            };
         }
     }
 
@@ -247,13 +247,13 @@ export class Mark {
             this._shouldUploadData = true;
         }
         if(this._shouldUploadData) {
-            if(this._instanceFunction == null) {
+            if(this._instanceFunctions == null) {
                 this._platformMarkData = this._platformMark.uploadData([ this._data ]);
             } else {
                 let allData: any[][] = [];
                 this._data.forEach((datum, index) => {
-                    let info = this._instanceFunction(datum, index, this._data);
-                    allData.push(info.data);
+                    let data = this._instanceFunctions.datum(datum, index, this._data);
+                    allData.push(data);
                 });
                 this._platformMarkData = this._platformMark.uploadData(allData);
             }
@@ -264,23 +264,22 @@ export class Mark {
 
     public render(): Mark {
         this.prepare();
-        if(this._instanceFunction == null) {
+        if(this._instanceFunctions == null) {
             this._platformMark.render(this._platformMarkData, () => {
                 this.uploadScaleUniforms();
             });
         } else {
             this._platformMark.render(this._platformMarkData, (index: number) => {
                 let datum = this._data[index];
-                let info = this._instanceFunction(datum, index, this._data);
-                if(info.attrs != null) {
-                    for(let attr in info.attrs) {
-                        if(info.attrs.hasOwnProperty(attr)) {
-                            this._platformMark.updateUniform(attr, getBindingValue(info.attrs[attr]));
+                if(this._instanceFunctions.attrs) {
+                    let attrs = this._instanceFunctions.attrs(datum, index, this._data);
+                    if(attrs != null) {
+                        for(let attr in attrs) {
+                            if(attrs.hasOwnProperty(attr)) {
+                                this._platformMark.updateUniform(attr, getBindingValue(attrs[attr]));
+                            }
                         }
                     }
-                }
-                if(info.onRender) {
-                    info.onRender(datum, index, this._data);
                 }
                 this.uploadScaleUniforms();
             });

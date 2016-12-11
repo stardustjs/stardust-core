@@ -5,6 +5,8 @@ describe('Library', () => {
         let specs = {};
         specs["line"] = Stardust.mark.line();
         specs["circle"] = Stardust.mark.circle(16);
+        specs["wedge"] = Stardust.mark.wedge(16);
+        specs["rect"] = Stardust.mark.rect();
         specs["polyline"] = Stardust.mark.polyline();
     });
 
