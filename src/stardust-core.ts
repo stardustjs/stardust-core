@@ -3,6 +3,7 @@ export let version = "0.0.1";
 // Math classes and utilities
 export * from "./core/utils/utils";
 export * from "./core/math/math";
+export * from "./core/color/color";
 
 // Mark class and mark specification
 export * from "./core/mark/mark";

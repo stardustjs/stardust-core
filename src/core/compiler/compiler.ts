@@ -11,6 +11,81 @@ export interface ScopeVariableInfo {
     translatedName: string;
 }
 
+export class ModuleResolver {
+    private _functions: Dictionary<FunctionOverloadResolver>;
+    private _functionModule: Dictionary<Dictionary<SyntaxTree.FileBlockFunction>>;
+    private _currentMoudles: Dictionary<SyntaxTree.FileBlockFunction>[];
+
+    constructor() {
+        this._functions = new Dictionary<FunctionOverloadResolver>();
+        this._functionModule = new Dictionary<Dictionary<SyntaxTree.FileBlockFunction>>();
+        this._currentMoudles = [];
+
+        Intrinsics.forEachIntrinsicFunction((info) => {
+            this.addIntrinsicFunction(info.name, {
+                type: "function",
+                isMark: false,
+                name: info.internalName,
+                returnType: info.returnType,
+                arguments: info.argTypes.map((x, idx) => { return { name: "a" + idx, type: x }}),
+                statements: null
+            });
+        });
+    }
+
+    public addIntrinsicFunction(name: string, func: SyntaxTree.FileBlockFunction) {
+        if(!this._functions.has(name)) {
+            let resolver = new FunctionOverloadResolver(name);
+            this._functions.set(name, resolver);
+            resolver.addFunction(func);
+        } else {
+            let resolver = this._functions.get(name);
+            resolver.addFunction(func);
+        }
+    }
+
+    public addFunction(name: string, func: SyntaxTree.FileBlockFunction) {
+        if(!this._functions.has(name)) {
+            let resolver = new FunctionOverloadResolver(name);
+            this._functions.set(name, resolver);
+            resolver.addFunction(func);
+        } else {
+            let resolver = this._functions.get(name);
+            resolver.addFunction(func);
+        }
+    }
+
+
+    public importFunction(module: Dictionary<SyntaxTree.FileBlockFunction>, name: string) {
+        this.addFunction(name, module.get(name));
+        this._functionModule.set(name, module);
+    }
+
+    public getFunction(name: string): FunctionOverloadResolver {
+        for(let i = this._currentMoudles.length - 1; i >= 0; i--) {
+            let cm = this._currentMoudles[i];
+            if(cm && cm.has(name)) {
+                let resolver = new FunctionOverloadResolver(name);
+                resolver.addFunction(cm.get(name));
+                return resolver;
+            }
+        }
+        if(this._functions.has(name)) {
+            return this._functions.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    public enterFunctionImplementation(name: string) {
+        this._currentMoudles.push(this._functionModule.get(name));
+    }
+
+    public leaveFunctionImplementation(name: string) {
+        this._currentMoudles.pop();
+    }
+}
+
 export class ScopeVariables {
     private _owner: ScopeStack;
     private _variables: Dictionary<ScopeVariableInfo>;
@@ -242,22 +317,23 @@ export class FunctionOverloadResolver {
 
 export class Compiler {
     private _scope: ScopeStack;
-    private _functions: Dictionary<FunctionOverloadResolver>;
-    private _intrinsicFunctions: Dictionary<FunctionOverloadResolver>;
+    // private _functions: Dictionary<FunctionOverloadResolver>;
+    // private _intrinsicFunctions: Dictionary<FunctionOverloadResolver>;
     private _constants: Dictionary<Intrinsics.ConstantInfo>;
     private _statements: Specification.Statement[];
+    private _moduleResolver: ModuleResolver;
     private _lastIndex: number;
     private _fieldTypeRegistry: { [ name: string]: string };
 
     constructor() {
         this._scope = new ScopeStack();
-        this._functions = new Dictionary<FunctionOverloadResolver>();
-        this._intrinsicFunctions = new Dictionary<FunctionOverloadResolver>();
+        // this._functions = new Dictionary<FunctionOverloadResolver>();
+        // this._intrinsicFunctions = new Dictionary<FunctionOverloadResolver>();
         this._constants = new Dictionary<Intrinsics.ConstantInfo>();
+        this._moduleResolver = new ModuleResolver();
         this._statements = [];
         this._lastIndex = 1;
 
-        this.prepareIntrinsicFunctions();
         this.prepareFieldTypeRegistry();
         this.prepareConstants();
     }
@@ -277,30 +353,8 @@ export class Compiler {
         });
     }
 
-    public addFunction(name: string, func: SyntaxTree.FileBlockFunction) {
-        if(!this._functions.has(name)) {
-            let resolver = new FunctionOverloadResolver(name);
-            this._functions.set(name, resolver);
-            resolver.addFunction(func);
-        } else {
-            let resolver = this._functions.get(name);
-            resolver.addFunction(func);
-        }
-    }
-
-    public addIntrinsicFunction(name: string, func: SyntaxTree.FileBlockFunction) {
-        if(!this._intrinsicFunctions.has(name)) {
-            let resolver = new FunctionOverloadResolver(name);
-            this._intrinsicFunctions.set(name, resolver);
-            resolver.addFunction(func);
-        } else {
-            let resolver = this._intrinsicFunctions.get(name);
-            resolver.addFunction(func);
-        }
-    }
-
     public resolveFunction(name: string, args: Specification.Expression[], kwargs: { [ name: string ]: Specification.Expression }): [ SyntaxTree.FileBlockFunction, Specification.Expression[] ] {
-        let resolver = this._functions.get(name) || this._intrinsicFunctions.get(name);
+        let resolver = this._moduleResolver.getFunction(name);
         if(resolver) {
             return resolver.resolveArguments(args, kwargs);
         } else {
@@ -308,39 +362,36 @@ export class Compiler {
         }
     }
 
-    public prepareIntrinsicFunctions() {
-        Intrinsics.forEachIntrinsicFunction((info) => {
-            this.addIntrinsicFunction(info.name, {
-                type: "function",
-                isMark: false,
-                name: info.internalName,
-                returnType: info.returnType,
-                arguments: info.argTypes.map((x, idx) => { return { name: "a" + idx, type: x }}),
-                statements: null
-            });
-        });
-    }
-
     public loadFile(file: SyntaxTree.File) {
         for(let block of file.blocks) {
             if(block.type == "function") {
                 let blockFunction = block as SyntaxTree.FileBlockFunction;
-                this.addFunction(blockFunction.name, blockFunction);
+                this._moduleResolver.addFunction(blockFunction.name, blockFunction);
             }
             if(block.type == "import") {
                 let blockImport = block as SyntaxTree.FileBlockImport;
                 if(blockImport.functionNames != null) {
                     blockImport.functionNames.forEach((name) => {
-                        let f = Library.getModuleFunction(blockImport.moduleName, name);
-                        this.addFunction(name, f);
+                        this._moduleResolver.importFunction(Library.getModule(blockImport.moduleName), name);
                     })
                 } else {
-                    Library.forEachModuleFunction(blockImport.moduleName, (f, name) => {
-                        this.addFunction(name, f);
+                    let module = Library.getModule(blockImport.moduleName);
+                    module.forEach((func, name) => {
+                        this._moduleResolver.importFunction(module, name);
                     });
                 }
             }
         }
+    }
+
+    public getDefaultValueForType(type: string): number | number[] {
+        if(type == "float") return 0;
+        if(type == "Vector2") return [ 0, 0 ];
+        if(type == "Vector3") return [ 0, 0, 0 ];
+        if(type == "Vector4") return [ 0, 0, 0, 0 ];
+        if(type == "Color") return [ 0, 0, 0, 1 ];
+        if(type == "Quaternion") return [ 0, 0, 0, 1 ];
+        return 0;
     }
 
     public compileFunctionToMark(globals: SyntaxTree.FileBlockGlobal[], block: SyntaxTree.FileBlockFunction): Specification.Mark {
@@ -357,14 +408,14 @@ export class Compiler {
             this._scope.addVariable(global.name, global.valueType, "global");
             markInput[global.name] = {
                 type: global.valueType,
-                default: global.default
+                default: global.default || this.getDefaultValueForType(global.valueType)
             }
         }
         for(let arg of block.arguments) {
             this._scope.addVariable(arg.name, arg.type, "local");
             markInput[arg.name] = {
                 type: arg.type,
-                default: arg.default
+                default: arg.default || this.getDefaultValueForType(arg.type)
             }
         }
 
@@ -511,6 +562,7 @@ export class Compiler {
                     }
 
                     this._scope.pushScope(argMap);
+                    this._moduleResolver.enterFunctionImplementation(expr.name);
                     for(let statement of func.statements) {
                         if(statement.type == "return") {
                             let statement_return = statement as SyntaxTree.StatementReturn;
@@ -520,6 +572,7 @@ export class Compiler {
                             this.compileStatement(statement);
                         }
                     }
+                    this._moduleResolver.leaveFunctionImplementation(expr.name);
                     this._scope.popScope();
                 }
                 return returnValueExpression;

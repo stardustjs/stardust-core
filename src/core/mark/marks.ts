@@ -92,7 +92,7 @@ export module mark {
 
     export function wedge(sides: number = 60): Specification.Mark {
         return mark.compile(`
-            import Triangle from P2D;
+            import { Triangle } from P2D;
 
             mark Wedge(
                 p1: Vector2 = [ 0, 0 ],
@@ -136,7 +136,7 @@ export module mark {
 
     export function polyline(): Specification.Mark {
         let spec = mark.compile(`
-            import Triangle from P2D;
+            import { Triangle } from P2D;
 
             mark Sector2(
                 c: Vector2,

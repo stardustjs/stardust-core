@@ -84,7 +84,7 @@ GlobalVariable
 ImportStatement
   = "import" __ "*" __ "from" __ moduleName:Name _ ";"
     { return { type: "import", moduleName: moduleName, functionNames: null }; }
-  / "import" __ name:Name others:(_ "," _ Name)* __ "from" __ moduleName:Name _ ";"
+  / "import" _ "{" _ name:Name others:(_ "," _ Name)* _ "}" _ "from" __ moduleName:Name _ ";"
     { return { type: "import", moduleName: moduleName, functionNames: resolveList(name, others, 3) }; }
 
 FunctionArgumentList

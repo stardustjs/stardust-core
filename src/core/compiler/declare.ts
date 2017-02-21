@@ -69,7 +69,7 @@ export class CustomMark {
     public generateCode(markName: string): string {
         let lines: string[] = [];
         for(let [ library, name ] of this._imports) {
-            lines.push(`import ${name} from ${library};`);
+            lines.push(`import { ${name} } from ${library};`);
         }
         // Input attributes:
         let inputDefs: string[] = [];

@@ -1,3 +1,4 @@
+let assert = require("assert");
 let Stardust = require("../dist/stardust-core");
 
 describe('Library', () => {
@@ -25,7 +26,7 @@ describe('Library', () => {
 
     it("Compiled Marks", () => {
         let mark = Stardust.mark.compile(`
-            import Triangle from P3D;
+            import { Triangle } from P3D;
 
             mark Point(
                 center: Vector3,
@@ -121,15 +122,30 @@ describe('Transforms', () => {
     });
 });
 
-// describe('Parser', () => {
-//     it("Expression", () => {
-//         let expr = Stardust.parseExpression("1 + 3 + 5 + 34.2 - sin(a) + cos(b - c + d)")
-//         let d = new Stardust.Dictionary();
-//         d.set("a", { type: "constant", valueType: "float", value: 3 });
-//         d.set("b", { type: "constant", valueType: "float", value: 4 });
-//         d.set("c", { type: "constant", valueType: "float", value: 5 });
-//         d.set("d", { type: "constant", valueType: "float", value: 6 });
-//         let e = Stardust.compileExpression(expr, d);
-//         console.log(e);
-//     });
-// });
+describe('Color', () => {
+    it("color", () => {
+        let c;
+        c = Stardust.color.fromHTML("rgba(12, 34, 56, 0.3)", 0.2);
+        assert.deepEqual(c, [ 12 / 255, 34 / 255, 56 / 255, 0.3 * 0.2 ]);
+        c = Stardust.color.fromHTML("rgb(12, 34, 56)");
+        assert.deepEqual(c, [ 12 / 255, 34 / 255, 56 / 255, 1.0 ]);
+        c = Stardust.color.fromHTML("#1F77b4");
+        assert.deepEqual(c, [ 0x1f / 255, 0x77 / 255, 0xb4 / 255, 1.0 ]);
+        c = Stardust.color.fromHTML("#efA", 0.3);
+        assert.deepEqual(c, [ 0xee / 255, 0xff / 255, 0xaa / 255, 0.3 ]);
+    });
+});
+
+describe('Parser', () => {
+    it("Expression", () => {
+        let expr = Stardust.parseExpression("1 + 3 + 5 + 34.2 - sin(a) + cos(b - c + tan(d))")
+        let d = new Stardust.Dictionary();
+        d.set("a", { type: "constant", valueType: "float", value: 3 });
+        d.set("b", { type: "constant", valueType: "float", value: 4 });
+        d.set("c", { type: "constant", valueType: "float", value: 5 });
+        d.set("d", { type: "constant", valueType: "float", value: 6 });
+        let e = Stardust.compileExpression(expr, d);
+        let eval = new Stardust.Context();
+        assert(eval.evaluateExpression(e) == 1 + 3 + 5 + 34.2 - Math.sin(3) + Math.cos(4 - 5 + Math.tan(6)));
+    });
+});

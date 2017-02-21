@@ -26,6 +26,10 @@ importPrimitiveCode("P2D", P2D.primitives);
 import * as P3D from "./primitives3d";
 importPrimitiveCode("P3D", P3D.primitives);
 
+export function getModule(name: string): Dictionary<SyntaxTree.FileBlockFunction> {
+    return modules.get(name);
+}
+
 export function getModuleFunction(name: string, functionName: string): SyntaxTree.FileBlockFunction {
     return modules.get(name).get(functionName);
 }
