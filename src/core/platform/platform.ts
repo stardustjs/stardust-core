@@ -41,6 +41,7 @@ export abstract class Platform {
     public abstract compile(
         mark: Mark,
         spec: Specification.Mark,
+        shader: Specification.Shader,
         bindings: Dictionary<Binding>,
         shfitBindings: Dictionary<ShiftBinding>
     ): PlatformMark;

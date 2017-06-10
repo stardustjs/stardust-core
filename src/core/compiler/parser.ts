@@ -124,6 +124,7 @@ export module SyntaxTree {
     export interface FileBlockFunction extends FileBlock {
         type: "function";
         isMark: boolean;
+        isShader: boolean;
         name: string;
         returnType: string;
         arguments: FunctionArgument[];

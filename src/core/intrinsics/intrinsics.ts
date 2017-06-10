@@ -173,6 +173,7 @@ RegisterConstructor("Color", [ "float", "float", "float", "float" ],  (a: number
 RegisterConstructor("Quaternion", [ "float", "float", "float", "float" ],  (a: number, b: number, c: number, d: number) => [a, b, c, d]);
 
 // Math functions.
+RegisterFunction("abs", [ "float" ], "float", (a: number) => Math.abs(a));
 RegisterFunction("sqrt", [ "float" ], "float", (a: number) => Math.sqrt(a));
 RegisterFunction("exp", [ "float" ], "float", (a: number) => Math.exp(a));
 RegisterFunction("log", [ "float" ], "float", (a: number) => Math.log(a));
@@ -184,6 +185,7 @@ RegisterFunction("acos", [ "float" ], "float", (a: number) => Math.acos(a));
 RegisterFunction("atan", [ "float" ], "float", (a: number) => Math.atan(a));
 RegisterFunction("atan2", [ "float", "float" ], "float", (a: number, b: number) => Math.atan2(a, b));
 
+RegisterFunction("abs", [ "int" ], "int", (a: number) => Math.abs(a));
 RegisterFunction("min", [ "int", "int" ], "int", (a: number, b: number) => Math.min(a, b));
 RegisterFunction("max", [ "int", "int" ], "int", (a: number, b: number) => Math.max(a, b));
 RegisterFunction("min", [ "float", "float" ], "float", (a: number, b: number) => Math.min(a, b));

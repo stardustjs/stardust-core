@@ -100,6 +100,13 @@ export module Specification {
         repeatEnd?: number;
     }
 
+    export interface Shader {
+        input: { [name: string]: Input };
+        output: { [name: string]: Output };
+        variables: { [name: string]: ValueType };
+        statements: Statement[];
+    }
+
     export interface Marks {
         [name: string]: Mark;
     }

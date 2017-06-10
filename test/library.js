@@ -11,6 +11,12 @@ describe('Library', () => {
         specs["polyline"] = Stardust.mark.polyline();
     });
 
+    it("Predefined Shaders", () => {
+        let specs = {};
+        specs["basic"] = Stardust.shader.basic();
+        console.log(JSON.stringify(specs["basic"], null, 2));
+    });
+
     it("Custom Marks", () => {
         let mark = Stardust.mark.custom();
         mark

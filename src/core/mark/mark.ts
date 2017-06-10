@@ -21,6 +21,8 @@ let shiftBindingDescriptions = [
 
 export class Mark {
     private _spec: Specification.Mark;
+    private _shader: Specification.Shader;
+
     private _platform: Platform;
     private _bindings: Dictionary<MarkBinding>;
     private _shiftBindings: Dictionary<ShiftBinding>;
@@ -30,8 +32,9 @@ export class Mark {
     private _platformMarkData: PlatformMarkData;
     private _shouldUploadData: boolean;
 
-    constructor(spec: Specification.Mark, platform: Platform) {
+    constructor(spec: Specification.Mark, shader: Specification.Shader, platform: Platform) {
         this._spec = spec;
+        this._shader = shader;
         this._data = [];
         this._platform = platform;
         this._bindings = new Dictionary<MarkBinding>();
@@ -64,6 +67,10 @@ export class Mark {
 
     public get spec(): Specification.Mark {
         return this._spec;
+    }
+
+    public get shader(): Specification.Shader {
+        return this._shader;
     }
 
     public attr(name: string): BindingValue | ScaleBinding;
@@ -243,7 +250,7 @@ export class Mark {
     public prepare(): Mark {
         if(!this._platformMark) {
             let [ spec, binding, shiftBinding ] = this.prepareSpecification();
-            this._platformMark = this._platform.compile(this, spec, binding, shiftBinding);
+            this._platformMark = this._platform.compile(this, spec, this._shader, binding, shiftBinding);
             this._shouldUploadData = true;
         }
         if(this._shouldUploadData) {

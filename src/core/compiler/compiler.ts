@@ -25,6 +25,7 @@ export class ModuleResolver {
             this.addIntrinsicFunction(info.name, {
                 type: "function",
                 isMark: false,
+                isShader: false,
                 name: info.internalName,
                 returnType: info.returnType,
                 arguments: info.argTypes.map((x, idx) => { return { name: "a" + idx, type: x }}),
@@ -772,7 +773,7 @@ export function compileTree(file: SyntaxTree.File): Specification.Marks {
     for(let block of file.blocks) {
         if(block.type == "function") {
             let blockFunction = block as SyntaxTree.FileBlockFunction;
-            if(blockFunction.isMark) {
+            if(blockFunction.isMark || blockFunction.isShader) {
                 let scope = new Compiler();
                 scope.loadFile(file);
                 let mark = scope.compileFunctionToMark(globals, blockFunction);

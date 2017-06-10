@@ -58,11 +58,12 @@ FileBlock
   = Function / GlobalVariable / ImportStatement
 
 Function
-  = type:("function" / "mark") __  name:Name _ "(" args:FunctionArgumentList ")" ret:(_ ":" _ Name)? _ "{" _ statements:Statements _ "}"
+  = type:("function" / "mark" / "shader") __  name:Name _ "(" args:FunctionArgumentList ")" ret:(_ ":" _ Name)? _ "{" _ statements:Statements _ "}"
     {
       return {
         type: "function",
         isMark: flatten(type) == "mark",
+        isShader: flatten(type) == "shader",
         name: name,
         returnType: ret ? ret[3] : "void",
         arguments: args,
@@ -124,6 +125,8 @@ ReturnStatement
 EmitStatement
   = "emit" _ "[" vertices:EmitVertexList "]"
     { return { type: "emit", vertices: vertices }; }
+  / "emit" _ "{" args:EmitArgumentList "}"
+    { return { type: "emit", vertices: [ args ] }; }
 
 EmitArgument
   = name:Name _ ":" _ expr:Expression
