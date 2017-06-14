@@ -98,14 +98,19 @@ export interface Scale {
 }
 
 export interface DomainRangeScale extends Scale {
-    domain: (value?: [ BindingValue, BindingValue ]) => DomainRangeScale | [ BindingValue, BindingValue ];
-    range: (value?: [ BindingValue, BindingValue ]) => DomainRangeScale | [ BindingValue, BindingValue ];
+    domain(): [ BindingValue, BindingValue ];
+    domain(value: [ BindingValue, BindingValue ]): DomainRangeScale;
+
+    range(): [ BindingValue, BindingValue ];
+    range(value: [ BindingValue, BindingValue ]): DomainRangeScale;
 }
 
 export interface InterpolateScale extends Scale {
-    t: (value?: BindingValue) => InterpolateScale | BindingValue;
+    t(): BindingValue;
+    t(value: BindingValue): InterpolateScale;
 }
 
 export interface CustomScale extends Scale {
-    attr: (name: string, value?: BindingValue) => CustomScale | BindingValue;
+    attr(name: string): BindingValue;
+    attr(name: string, value: BindingValue): CustomScale;
 }

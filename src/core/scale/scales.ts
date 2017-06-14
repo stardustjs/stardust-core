@@ -11,7 +11,7 @@ export module scale {
     export function linear(valueType: string = "float"): DomainRangeScale {
         let scale = ((...args: ScaleArgument[]): ScaleBinding => {
             return new ScaleBinding(scale, valueType, [ "float" ], ...args);
-        }) as DomainRangeScale;
+        }) as any;
 
         let domain: [ BindingValue, BindingValue ] = [ 0, 1 ];
         let range: [ BindingValue, BindingValue ] = [ 0, 1 ];
@@ -37,7 +37,7 @@ export module scale {
                 { name: "r1", type: valueType, binding: range[1] }
             ];
         };
-        scale.getExpression = (attrs, value) => {
+        scale.getExpression = (attrs: any, value: any) => {
             return SC.mix(
                 attrs["r0"], attrs["r1"],
                 SC.div(SC.sub(value, attrs["d0"]), SC.sub(attrs["d1"], attrs["d0"]))
@@ -49,7 +49,7 @@ export module scale {
     export function log(valueType: string = "float"): DomainRangeScale {
         let scale = ((...args: ScaleArgument[]): ScaleBinding => {
             return new ScaleBinding(scale, valueType, [ "float" ], ...args);
-        }) as DomainRangeScale;
+        }) as any;
 
         let domain: [ BindingValue, BindingValue ] = [ 0, 1 ];
         let range: [ BindingValue, BindingValue ] = [ 0, 1 ];
@@ -75,7 +75,7 @@ export module scale {
                 { name: "r1", type: valueType, binding: range[1] }
             ];
         };
-        scale.getExpression = (attrs, value) => {
+        scale.getExpression = (attrs: any, value: any) => {
             return SC.mix(
                 attrs["r0"], attrs["r1"],
                 SC.div(
@@ -150,7 +150,7 @@ export module scale {
     export function interpolate(valueType: string = "float"): InterpolateScale {
         let scale = ((...args: ScaleArgument[]): ScaleBinding => {
             return new ScaleBinding(scale, valueType, [ valueType, valueType ], ...args);
-        }) as InterpolateScale;
+        }) as any;
 
         let t: BindingValue;
 
@@ -165,7 +165,7 @@ export module scale {
                 { name: "t", type: "float", binding: t }
             ];
         };
-        scale.getExpression = (attrs, value1, value2) => {
+        scale.getExpression = (attrs: any, value1: any, value2: any) => {
             return SC.mix(
                 value1, value2,
                 attrs["t"]
@@ -189,7 +189,7 @@ export module scale {
             vars.set("value", { type: "constant", valueType: "float", value: null } as Specification.ExpressionConstant);
             let e = compileExpression(parsed, vars);
             return new ScaleBinding(scale, e.valueType, [ "float" ], ...args);
-        }) as CustomScale;
+        }) as any;
 
         let attributes = new Dictionary<{ type: string, value: BindingValue }>();
 
@@ -212,7 +212,7 @@ export module scale {
             });
             return r;
         };
-        scale.getExpression = (attrs, value) => {
+        scale.getExpression = (attrs: any, value: any) => {
             let vars = new Dictionary<Specification.Expression>();
             for(let name in attrs) {
                 if(attrs.hasOwnProperty(name)) {
