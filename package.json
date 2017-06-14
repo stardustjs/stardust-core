@@ -9,7 +9,7 @@
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git@github.com:stardust-vis/stardust-core.git"
+    "url": "https://github.com/stardustjs/stardust-core.git"
   },
   "main": "dist/stardust-core.js",
   "typings": "dist/stardust-core.d.ts",
