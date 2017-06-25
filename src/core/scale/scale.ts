@@ -113,4 +113,5 @@ export interface InterpolateScale extends Scale {
 export interface CustomScale extends Scale {
     attr(name: string): BindingValue;
     attr(name: string, value: BindingValue): CustomScale;
+    attr(name: string, type: string, value: BindingValue): CustomScale;
 }
