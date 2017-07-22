@@ -92,6 +92,10 @@ function RegisterOperator(name: string, argTypes: string[], returnType: string, 
     });
 }
 
+function not_implemented(): Specification.Value {
+    throw new Error("not implemented");
+}
+
 let RegisterConstructor = (type: string, srcTypes: string[], func: IntrinsicFunction) => RegisterFunction(type, srcTypes, type, func);
 
 // Basic arithmetics: +, -, *, /.
@@ -259,6 +263,10 @@ RegisterTypeConversion("Quaternion", "Vector4", 0, (a: number) => a);
 RegisterTypeConversion("Vector4", "Quaternion", 0, (a: number) => a);
 RegisterTypeConversion("Color", "Vector4", 0, (a: number) => a);
 RegisterTypeConversion("Vector4", "Color", 0, (a: number) => a);
+RegisterTypeConversion("Vector4Array", "ColorArray", 0, (a: number) => a);
+RegisterTypeConversion("ColorArray", "Vector4Array", 0, (a: number) => a);
+RegisterTypeConversion("Vector4Array2D", "Image", 0, (a: number) => a);
+RegisterTypeConversion("Image", "Vector4Image", 0, (a: number) => a);
 
 // Constants
 addConstant("PI", "float", Math.PI);
@@ -266,7 +274,15 @@ addConstant("SQRT2", "float", Math.SQRT2);
 addConstant("SQRT1_2", "float", Math.SQRT1_2);
 addConstant("RED", "Color", [ 1, 0, 0, 1 ]);
 
-RegisterFunction("array", [ "FloatArray", "float" ], "float", (color: number[]) => color);
-RegisterFunction("array", [ "Vector2Array", "float" ], "Vector2", (color: number[]) => color);
-RegisterFunction("array", [ "Vector3Array", "float" ], "Vector3", (color: number[]) => color);
-RegisterFunction("array", [ "Vector4Array", "float" ], "Vector4", (color: number[]) => color);
+// Array and image
+RegisterFunction("array", [ "FloatArray", "float" ], "float", not_implemented);
+RegisterFunction("array", [ "Vector2Array", "float" ], "Vector2", not_implemented);
+RegisterFunction("array", [ "Vector3Array", "float" ], "Vector3", not_implemented);
+RegisterFunction("array", [ "Vector4Array", "float" ], "Vector4", not_implemented);
+RegisterFunction("array", [ "ColorArray", "float" ], "Color", not_implemented);
+
+RegisterFunction("image", [ "Image", "Vector2" ], "Color", not_implemented);
+RegisterFunction("image", [ "Vector4Image", "Vector2" ], "Vector4", not_implemented);
+RegisterFunction("image", [ "Vector3Image", "Vector2" ], "Vector3", not_implemented);
+RegisterFunction("image", [ "Vector2Image", "Vector2" ], "Vector2", not_implemented);
+RegisterFunction("image", [ "FloatImage", "Vector2" ], "float", not_implemented);

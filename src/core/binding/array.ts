@@ -7,6 +7,7 @@ export interface TextureData {
     height: number;
     numberComponents: number;
     data: Float32Array;
+    dimensions: number;
 }
 
 export abstract class TextureBinding {
@@ -22,26 +23,26 @@ export class Array extends TextureBinding {
     private _textureData: TextureData = null;
 
     public getTextureData(): TextureData {
-        if(this._dirty) {
+        if (this._dirty) {
             let values = this._data.map(this._valueFunction).map(getBindingValue);
-            if(values.length == 0) {
+            if (values.length == 0) {
                 this._textureData = null;
             } else {
                 let array: Float32Array;
                 let numberComponents: number;
-                if(typeof(values[0]) == "number") {
+                if (typeof (values[0]) == "number") {
                     numberComponents = 1;
                     array = new Float32Array(values.length * 4);
-                    for(let i = 0; i < values.length; i++) {
+                    for (let i = 0; i < values.length; i++) {
                         array[i * 4] = values[i] as number;
                     }
                 } else {
                     numberComponents = (values[0] as number[]).length;
                     array = new Float32Array(values.length * 4);
                     let offset = 0;
-                    for(let i = 0; i < values.length; i++) {
+                    for (let i = 0; i < values.length; i++) {
                         let v = values[i] as number[];
-                        for(let j = 0; j < numberComponents; j++) {
+                        for (let j = 0; j < numberComponents; j++) {
                             array[offset++] = v[j];
                         }
                         offset += 4 - numberComponents;
@@ -50,6 +51,7 @@ export class Array extends TextureBinding {
                 this._textureData = {
                     width: this._data.length,
                     height: 1,
+                    dimensions: 1,
                     numberComponents: numberComponents,
                     data: array
                 }
@@ -58,8 +60,10 @@ export class Array extends TextureBinding {
         return this._textureData;
     }
 
+    public data(): any[];
+    public data(data: any[]): Array;
     public data(data?: any[]): Array | any[] {
-        if(data != null) {
+        if (data != null) {
             this._data = data;
             this._dirty = true;
             return this;
@@ -68,8 +72,10 @@ export class Array extends TextureBinding {
         }
     }
 
+    public value(): ArrayBindingFunction;
+    public value(func: ArrayBindingFunction): Array;
     public value(func?: ArrayBindingFunction): Array | ArrayBindingFunction {
-        if(func != null) {
+        if (func != null) {
             this._valueFunction = func;
             this._dirty = true;
             return this;
@@ -79,13 +85,6 @@ export class Array extends TextureBinding {
     }
 }
 
-// export class Grid extends TextureBinding  {
-// }
-
 export function array(): Array {
     return new Array();
 }
-
-// export function grid(): Grid {
-//     return new Grid();
-// }
