@@ -1,4 +1,4 @@
-export let version = "0.0.1";
+export let version = "0.1.1";
 
 // Math classes and utilities
 export * from "./core/utils/utils";
