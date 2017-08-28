@@ -1,32 +1,15 @@
-export let version = "0.1.1";
+export let version = "0.2.0";
 
 // Math classes and utilities
-export * from "./core/utils/utils";
-export * from "./core/math/math";
-export * from "./core/color/color";
+export * from "./common";
 
-// Mark class and mark specification
-export * from "./core/mark/mark";
-export * from "./core/mark/marks";
-export * from "./core/binding/binding";
-export * from "./core/spec/spec";
-export * from "./core/intrinsics/intrinsics";
-export * from "./core/exceptions";
+import * as Specification from "./specification";
+import * as Intrinsics from "./intrinsics";
+import * as Compiler from "./compiler";
 
-// Parsing and compiling
-export * from "./core/compiler/parser";
-export * from "./core/compiler/compiler";
-export * from "./core/compiler/declare";
+export * from "./binding";
+export * from "./mark";
+export * from "./scale";
+export * from "./platform";
 
-// Code transformation
-export * from "./core/transform/transforms";
-
-// Javascript context
-export * from "./core/evaluator/evaluator";
-
-// Platform base class
-export * from "./core/platform/platform";
-
-// Scales
-export * from "./core/scale/scale";
-export { scale } from "./core/scale/scales";
+export { Specification, Intrinsics, Compiler };
