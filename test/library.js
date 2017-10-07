@@ -14,7 +14,6 @@ describe('Library', () => {
     it("Predefined Shaders", () => {
         let specs = {};
         specs["basic"] = Stardust.shader.basic();
-        console.log(JSON.stringify(specs["basic"], null, 2));
     });
 
     it("Custom Marks", () => {
@@ -123,22 +122,22 @@ describe('Library', () => {
 
 describe('Transforms', () => {
     it("FlattenEmits", () => {
-        Stardust.flattenEmits(Stardust.mark.circle(16));
-        Stardust.flattenEmits(Stardust.mark.polyline());
+        Stardust.Transforms.flattenEmits(Stardust.mark.circle(16));
+        Stardust.Transforms.flattenEmits(Stardust.mark.polyline());
     });
 });
 
 describe('Color', () => {
     it("color", () => {
         let c;
-        c = Stardust.color.fromHTML("rgba(12, 34, 56, 0.3)", 0.2);
-        assert.deepEqual(c, [ 12 / 255, 34 / 255, 56 / 255, 0.3 * 0.2 ]);
-        c = Stardust.color.fromHTML("rgb(12, 34, 56)");
-        assert.deepEqual(c, [ 12 / 255, 34 / 255, 56 / 255, 1.0 ]);
-        c = Stardust.color.fromHTML("#1F77b4");
-        assert.deepEqual(c, [ 0x1f / 255, 0x77 / 255, 0xb4 / 255, 1.0 ]);
-        c = Stardust.color.fromHTML("#efA", 0.3);
-        assert.deepEqual(c, [ 0xee / 255, 0xff / 255, 0xaa / 255, 0.3 ]);
+        c = Stardust.Color.FromHTML("rgba(12, 34, 56, 0.3)", 0.2);
+        assert.deepEqual(c, Stardust.Color.FromArray([ 12 / 255, 34 / 255, 56 / 255, 0.3 * 0.2 ]));
+        c = Stardust.Color.FromHTML("rgb(12, 34, 56)");
+        assert.deepEqual(c, Stardust.Color.FromArray([ 12 / 255, 34 / 255, 56 / 255, 1.0 ]));
+        c = Stardust.Color.FromHTML("#1F77b4");
+        assert.deepEqual(c, Stardust.Color.FromArray([ 0x1f / 255, 0x77 / 255, 0xb4 / 255, 1.0 ]));
+        c = Stardust.Color.FromHTML("#efA", 0.3);
+        assert.deepEqual(c, Stardust.Color.FromArray([ 0xee / 255, 0xff / 255, 0xaa / 255, 0.3 ]));
     });
 });
 

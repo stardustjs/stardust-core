@@ -6,7 +6,7 @@
     "email": "donghao.ren@gmail.com",
     "url": "https://donghaoren.org/"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/stardustjs/stardust-core.git"
@@ -17,12 +17,12 @@
     "dist"
   ],
   "scripts": {
-    "build:ts": "tsc -p src",
-    "build:pegjs": "pegjs --allowed-start-rules FileEntry,ExpressionEntry src/core/compiler/parser.pegjs dist/core/compiler/parser_pegjs.js",
+    "build:ts": "tsc -p .",
+    "build:pegjs": "pegjs --allowed-start-rules FileEntry,ExpressionEntry src/compiler/parser.pegjs dist/compiler/parser_pegjs.js",
     "build": "npm run build:ts && npm run build:pegjs",
     "test": "mocha test",
     "prepublish": "npm run build",
-    "watch": "tsc -w -p src"
+    "watch": "tsc -w -p ."
   },
   "devDependencies": {
     "mocha": "^3.1.2",
