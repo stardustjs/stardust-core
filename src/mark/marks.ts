@@ -4,7 +4,7 @@ import { Mark } from "./mark";
 import * as Specification from "../specification/specification";
 import { Platform } from "../platform";
 
-import { shader } from "./shaders";
+import * as shader from "./shaders";
 
 export function create(spec: Specification.Mark, shader: Specification.Shader, platform: Platform): Mark;
 export function create(spec: Specification.Mark, platform: Platform): Mark;
