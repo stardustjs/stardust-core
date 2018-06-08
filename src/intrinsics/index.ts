@@ -287,3 +287,9 @@ RegisterFunction("image", ["Vector4Image", "Vector2"], "Vector4", not_implemente
 RegisterFunction("image", ["Vector3Image", "Vector2"], "Vector3", not_implemented);
 RegisterFunction("image", ["Vector2Image", "Vector2"], "Vector2", not_implemented);
 RegisterFunction("image", ["FloatImage", "Vector2"], "float", not_implemented);
+
+// Return the camera position if appliable
+RegisterFunction("get_camera_position", [], "Vector3", not_implemented);
+
+// Return a unit vector pointing to the camera
+RegisterFunction("get_camera_direction", ["Vector3"], "Vector3", not_implemented);

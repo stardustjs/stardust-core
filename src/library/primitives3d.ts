@@ -17,12 +17,21 @@ export let primitives = `
         p1: Vector3,
         p2: Vector3,
         p3: Vector3,
-        p4: Vector3
+        p4: Vector3,
+        color: Color = [ 0, 0, 0, 1 ]
     ) {
-        Triangle(p3, p4, p1);
-        Triangle(p1, p4, p2);
-        Triangle(p1, p2, p3);
-        Triangle(p2, p3, p4);
+        Triangle(p3, p4, p1, color);
+        Triangle(p1, p4, p2, color);
+        Triangle(p1, p2, p3, color);
+        Triangle(p2, p3, p4, color);
+    }
+
+    mark Line(
+        p1: Vector3,
+        p2: Vector3,
+        color: Color = [ 0, 0, 0, 1 ]
+    ) {
+
     }
 
     mark Cube(

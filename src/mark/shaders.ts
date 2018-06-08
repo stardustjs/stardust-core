@@ -22,7 +22,7 @@ export function lighting(): Specification.Shader {
             normal: Vector3,
             position: Vector3
         ) {
-            let lighting = normalize(position);
+            let lighting = get_camera_direction(position);
             let NdotL = abs(dot(normal, lighting));
             let s = NdotL * 0.5 + 0.5;
             emit { color: Color(s * color.r, s * color.g, s * color.b, color.a) };

@@ -21,11 +21,11 @@ export class ParseError extends BaseError {
     public stack: string;
 
     constructor(message?: string, start?: FileLocation, end?: FileLocation) {
-      super(message);
-      this.name = "ParseError";
-      this.message = message;
-      this.start = start;
-      this.end = end;
+        super(message);
+        this.name = "ParseError";
+        this.message = message;
+        this.start = start;
+        this.end = end;
     }
 }
 
@@ -36,11 +36,11 @@ export class CompileError extends BaseError {
     public stack: string;
 
     constructor(message?: string, start?: FileLocation, end?: FileLocation) {
-      super(message);
-      this.name = "CompileError";
-      this.message = message;
-      this.start = start;
-      this.end = end;
+        super(message);
+        this.name = "CompileError";
+        this.message = message;
+        this.start = start;
+        this.end = end;
     }
 }
 
@@ -51,10 +51,10 @@ export class RuntimeError extends BaseError {
     public stack: string;
 
     constructor(message?: string, start?: FileLocation, end?: FileLocation) {
-      super(message);
-      this.name = "RuntimeError";
-      this.message = message;
-      this.start = start;
-      this.end = end;
+        super(message);
+        this.name = "RuntimeError";
+        this.message = message;
+        this.start = start;
+        this.end = end;
     }
 }

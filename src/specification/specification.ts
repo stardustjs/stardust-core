@@ -24,7 +24,7 @@ export type ExpressionType =
     "variable" |        // The value of a variable.
     "function" |        // A predefined function.
     "field"             // Get a field of an object.
-;
+    ;
 
 /** Base expression interface */
 export interface Expression {
@@ -72,7 +72,7 @@ export type StatementType =
     "condition" |   // Conditional statement.
     "for" |         // For loop.
     "emit"          // Emit vertex.
-;
+    ;
 
 /** Base statement interface */
 export interface Statement {
