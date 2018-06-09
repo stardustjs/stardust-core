@@ -6,7 +6,7 @@
     "email": "donghao.ren@gmail.com",
     "url": "https://donghaoren.org/"
   },
-  "version": "1.0.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/stardustjs/stardust-core.git"

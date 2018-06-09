@@ -29,9 +29,23 @@ export let primitives = `
     mark Line(
         p1: Vector3,
         p2: Vector3,
-        color: Color = [ 0, 0, 0, 1 ]
+        width: float = 1,
+        color: Color = [ 1, 0, 1, 1 ]
     ) {
-
+        let center = (p1 + p2) * 0.5;
+        let d = p2 - p1;
+        let v = get_camera_direction(center);
+        let F = normalize(cross(d, v));
+        let normal = normalize(cross(F, d));
+        let s = width * 0.5;
+        emit [
+            { position: p1 + F * s, color: color, normal: normal },
+            { position: p2 + F * s, color: color, normal: normal },
+            { position: p1 - F * s, color: color, normal: normal },
+            { position: p1 - F * s, color: color, normal: normal },
+            { position: p2 - F * s, color: color, normal: normal },
+            { position: p2 + F * s, color: color, normal: normal }
+        ];
     }
 
     mark Cube(
