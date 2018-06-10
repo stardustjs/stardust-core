@@ -27,6 +27,8 @@ export function create(arg1: CustomMark | Specification.Mark, arg2: Platform | S
     }
 }
 
+export { createText } from "./text";
+
 export function custom(): CustomMark {
     return new CustomMark();
 }

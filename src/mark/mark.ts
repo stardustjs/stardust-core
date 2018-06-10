@@ -129,7 +129,7 @@ export class Mark {
         if (data === undefined) {
             return this._data;
         } else {
-            this._data = data.slice();
+            this._data = data;
             this._shouldUploadData = true;
             return this;
         }
