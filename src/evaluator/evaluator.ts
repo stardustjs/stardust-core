@@ -38,10 +38,16 @@ export class Context {
                 let expr = expression as Specification.ExpressionField;
                 let value = this.evaluateExpression(expr.value);
                 switch (expr.fieldName) {
+                    case "0": return (value as number[])[0];
+                    case "1": return (value as number[])[1];
+                    case "2": return (value as number[])[2];
+                    case "3": return (value as number[])[3];
+
                     case "x": return (value as number[])[0];
                     case "y": return (value as number[])[1];
                     case "z": return (value as number[])[2];
                     case "w": return (value as number[])[3];
+                    
                     case "r": return (value as number[])[0];
                     case "g": return (value as number[])[1];
                     case "b": return (value as number[])[2];
