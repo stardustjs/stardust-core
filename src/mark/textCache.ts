@@ -10,25 +10,25 @@ export class Font {
         return "F" + this.fontFamily + "," + this.fontSize + "," + this.fontWeight + "," + this.fontStyle
     }
     setFont(c: CanvasRenderingContext2D) {
-        c.font = `${this.fontSize}px ${JSON.stringify(this.fontFamily)}`;
+        c.font = `${this.fontStyle} ${this.fontWeight} ${this.fontSize}px ${JSON.stringify(this.fontFamily)}`;
     }
 }
 
-export class Style {
-    constructor(
-        public fill: string = null,
-        public stroke: string = null,
-        public strokeWidth: number = 1
-    ) { }
-    hash() {
-        return "S" + this.fill + "," + this.stroke + "," + this.strokeWidth;
-    }
+// export class Style {
+//     constructor(
+//         public fill: string = null,
+//         public stroke: string = null,
+//         public strokeWidth: number = 1
+//     ) { }
+//     hash() {
+//         return "S" + this.fill + "," + this.stroke + "," + this.strokeWidth;
+//     }
 
-    drawText(text: string, x: number, y: number, c: CanvasRenderingContext2D) {
-        c.fillStyle = this.fill;
-        c.fillText(text, x, y);
-    }
-}
+//     drawText(text: string, x: number, y: number, c: CanvasRenderingContext2D) {
+//         c.fillStyle = "#000000";
+//         c.fillText(text, x, y);
+//     }
+// }
 
 export interface TextCacheEntry {
     x: number, y: number;
@@ -63,10 +63,11 @@ export class TextCache {
         this.canvas.height = this.height * scaling;
         this.scaling = scaling;
         this.context.scale(scaling, scaling);
+        this.context.fillStyle = "#000000";
     }
     // Add text of a given font to the cache.
-    addText(text: string, font: Font, style: Style) {
-        var hash = JSON.stringify(text) + font.hash() + style.hash();
+    addText(text: string, font: Font) {
+        var hash = JSON.stringify(text) + font.hash();
         if (this.entries[hash]) {
             return this._layout2TextRect(this.entries[hash]);
         }
@@ -74,10 +75,10 @@ export class TextCache {
 
         var width = this.context.measureText(text).width;
         var height = font.fontSize;
-        var bbox_width = Math.ceil(width + 4 + style.strokeWidth);
-        var bbox_height = Math.ceil(height + 2 + style.strokeWidth);
-        var x_offset = 2 + style.strokeWidth / 2;
-        var baseline_offset = height - 2 + style.strokeWidth / 2;
+        var bbox_width = Math.ceil(width + 4);
+        var bbox_height = Math.ceil(height + 2);
+        var x_offset = 2;
+        var baseline_offset = height - 2;
 
         if (bbox_width > this.width) {
             throw "E_FIT";
@@ -110,7 +111,7 @@ export class TextCache {
         var draw_x = layout.x + x_offset;
         var draw_y = layout.y + baseline_offset;
 
-        style.drawText(text, draw_x, draw_y, this.context);
+        this.context.fillText(text, draw_x, draw_y);
         this.updated = true;
         return this._layout2TextRect(layout);
     };
@@ -125,8 +126,8 @@ export class TextCache {
     }
 
     // Query the cache for a text and given font.
-    getTextRect(text: string, font: Font, style: Style) {
-        var hash = JSON.stringify(text) + font.hash() + style.hash();
+    getTextRect(text: string, font: Font) {
+        var hash = JSON.stringify(text) + font.hash();
         var layout = this.entries[hash];
         if (!layout) return null;
         return this._layout2TextRect(layout);

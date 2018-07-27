@@ -30,6 +30,7 @@ export class TextMark extends Mark {
                 normal: Vector3 = [ 0, 0, 1 ],
                 up: ${mode == "2d" ? "Vector2 = [ 0, 1 ]" : "Vector3 = [ 0, 1, 0 ]"},
                 scale: float = 1,
+                color: Color = [ 0, 0, 0, 1 ],
                 alignX: float = 0,
                 alignY: float = 0,
                 mScaling: float,
@@ -46,20 +47,23 @@ export class TextMark extends Mark {
                 let mSizeY = Vector2(0, info.y);
                 let mTexPos = Vector2(info.z, info.w);
                 emit [
-                    { position: p, tp: mTexPos },
-                    { position: p + e1, tp: mTexPos + mSizeX },
-                    { position: p + e1 + e2, tp: mTexPos + mSizeX + mSizeY },
-                    { position: p, tp: mTexPos },
-                    { position: p + e1 + e2, tp: mTexPos + mSizeX + mSizeY },
-                    { position: p + e2, tp: mTexPos + mSizeY }
+                    { position: p, tp: mTexPos, color: color },
+                    { position: p + e1, tp: mTexPos + mSizeX, color: color },
+                    { position: p + e1 + e2, tp: mTexPos + mSizeX + mSizeY, color: color },
+                    { position: p, tp: mTexPos, color: color },
+                    { position: p + e1 + e2, tp: mTexPos + mSizeX + mSizeY, color: color },
+                    { position: p + e2, tp: mTexPos + mSizeY, color: color }
                 ];
             }
         `)["TextMark"], compile(`
             shader TextShader(
                 tp: Vector2,
-                mImage: Image
+                mImage: Image,
+                color: Color
             ) {
-                emit { color: image(mImage, tp) };
+                let c = image(mImage, tp);
+                let alpha = c.a;
+                emit { color: Color(color.r, color.g, color.b, alpha * color.a) };
             }
         `)["TextShader"], platform);
 
@@ -80,11 +84,14 @@ export class TextMark extends Mark {
             let data = this.data();
             let texts = new Binding("string", this._textBinding).map(data);
             let fontFamilys = new Binding("string", this._fontFamilyBinding).map(data);
+            let fontSizes = new Binding("string", this._fontSizeBinding).map(data);
+            let fontWeights = new Binding("string", this._fontWeightBinding).map(data);
+            let fontStyles = new Binding("string", this._fontStyleBinding).map(data);
+
             let attempt = () => {
                 this._textLayouts = texts.map((x, i) => {
-                    let font = new TextCache.Font(fontFamilys[i].toString(), 12);
-                    let style = new TextCache.Style("black", null);
-                    let info = this._textCache.addText(x.toString(), font, style);
+                    let font = new TextCache.Font(fontFamilys[i].toString(), fontSizes[i] as number, fontWeights[i].toString(), fontStyles[i].toString());
+                    let info = this._textCache.addText(x.toString(), font);
                     return {
                         size: [info.w, info.h],
                         position: [info.x, info.y]
