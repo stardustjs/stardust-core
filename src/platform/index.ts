@@ -15,7 +15,6 @@ export abstract class PlatformMark {
     public abstract updateUniform(name: string, value: Specification.Value): void;
     public abstract updateTexture(name: string, value: TextureBinding): void;
 
-    /** Upload data to the mark */
     public abstract uploadData(data: any[][]): PlatformMarkData;
 
     /** Render the graphics */
@@ -61,4 +60,8 @@ export abstract class Platform {
     public static Create(name: string, ...args: any[]) {
         return platformConstructors.get(name)(...args);
     }
+}
+
+export function platform(name: string, ...args: any[]) {
+    return Platform.Create(name, ...args);
 }

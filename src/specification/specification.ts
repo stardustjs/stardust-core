@@ -1,5 +1,5 @@
 /** Value is a number of a vector of 2, 3, 4 numbers */
-export type Value = number | number[];
+export type Value = number | number[] | string;
 
 /** Value type: float, int, bool, Vector2, Vector3, Quaternion */
 export type ValueType = string;
@@ -24,7 +24,7 @@ export type ExpressionType =
     "variable" |        // The value of a variable.
     "function" |        // A predefined function.
     "field"             // Get a field of an object.
-;
+    ;
 
 /** Base expression interface */
 export interface Expression {
@@ -72,7 +72,7 @@ export type StatementType =
     "condition" |   // Conditional statement.
     "for" |         // For loop.
     "emit"          // Emit vertex.
-;
+    ;
 
 /** Base statement interface */
 export interface Statement {

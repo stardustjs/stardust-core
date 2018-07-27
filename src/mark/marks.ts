@@ -4,7 +4,7 @@ import { Mark } from "./mark";
 import * as Specification from "../specification/specification";
 import { Platform } from "../platform";
 
-import { shader } from "./shaders";
+import * as shader from "./shaders";
 
 export function create(spec: Specification.Mark, shader: Specification.Shader, platform: Platform): Mark;
 export function create(spec: Specification.Mark, platform: Platform): Mark;
@@ -26,6 +26,8 @@ export function create(arg1: CustomMark | Specification.Mark, arg2: Platform | S
         }
     }
 }
+
+export { createText } from "./text";
 
 export function custom(): CustomMark {
     return new CustomMark();

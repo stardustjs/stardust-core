@@ -7,7 +7,8 @@ export interface TextureData {
     width: number;
     height: number;
     numberComponents: number;
-    data: Float32Array;
+    type: "f32" | "u8" | "HTMLImageElement" | "HTMLCanvasElement";
+    data: Float32Array | Uint8Array | Uint8ClampedArray | HTMLCanvasElement | HTMLImageElement;
     dimensions: number;
 }
 
@@ -54,6 +55,7 @@ export class Array extends TextureBinding {
                     width: this._data.length,
                     height: 1,
                     dimensions: 1,
+                    type: "f32",
                     numberComponents: numberComponents,
                     data: array
                 }
@@ -84,6 +86,25 @@ export class Array extends TextureBinding {
         } else {
             return this._valueFunction;
         }
+    }
+}
+
+export class Image extends TextureBinding {
+    _data: TextureData = null;
+
+    setImage(image: HTMLImageElement | HTMLCanvasElement) {
+        this._data = {
+            width: image.width,
+            height: image.height,
+            numberComponents: 4,
+            type: image instanceof HTMLImageElement ? "HTMLImageElement" : "HTMLCanvasElement",
+            data: image,
+            dimensions: 2
+        };
+    }
+
+    getTextureData() {
+        return this._data;
     }
 }
 

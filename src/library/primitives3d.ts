@@ -17,12 +17,35 @@ export let primitives = `
         p1: Vector3,
         p2: Vector3,
         p3: Vector3,
-        p4: Vector3
+        p4: Vector3,
+        color: Color = [ 0, 0, 0, 1 ]
     ) {
-        Triangle(p3, p4, p1);
-        Triangle(p1, p4, p2);
-        Triangle(p1, p2, p3);
-        Triangle(p2, p3, p4);
+        Triangle(p3, p4, p1, color);
+        Triangle(p1, p4, p2, color);
+        Triangle(p1, p2, p3, color);
+        Triangle(p2, p3, p4, color);
+    }
+
+    mark Line(
+        p1: Vector3,
+        p2: Vector3,
+        width: float = 1,
+        color: Color = [ 1, 0, 1, 1 ]
+    ) {
+        let center = (p1 + p2) * 0.5;
+        let d = p2 - p1;
+        let v = get_camera_direction(center);
+        let F = normalize(cross(d, v));
+        let normal = normalize(cross(F, d));
+        let s = width * 0.5;
+        emit [
+            { position: p1 + F * s, color: color, normal: normal },
+            { position: p2 + F * s, color: color, normal: normal },
+            { position: p1 - F * s, color: color, normal: normal },
+            { position: p1 - F * s, color: color, normal: normal },
+            { position: p2 - F * s, color: color, normal: normal },
+            { position: p2 + F * s, color: color, normal: normal }
+        ];
     }
 
     mark Cube(

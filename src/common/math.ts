@@ -164,12 +164,12 @@ export class Quaternion extends MathType {
 
     /** Compute the length of the quaternion */
     public length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.w * this.w);
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
     }
 
     /** Return the normalized quaternion. Does not affect this quaternion */
     public normalize(): Quaternion {
-        let s = Math.sqrt(this.x * this.x + this.y * this.y + this.w * this.w);
+        let s = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
         return new Quaternion(this.x / s, this.y / s, this.z / s, this.w / s);
     }
 
