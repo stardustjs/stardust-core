@@ -109,6 +109,7 @@ Statements
 Statement
   = s:(ReturnStatement /
        EmitStatement /
+       DiscardStatement /
        VariableDeclaration /
        VariableAssignment /
        ExpressionStatement
@@ -121,6 +122,10 @@ Statement
 ReturnStatement
   = "return" __ expr:Expression
     { return { type: "return", value: expr }; }
+
+DiscardStatement
+  = "discard"
+    { return { type: "discard" }; }
 
 EmitStatement
   = "emit" _ "[" vertices:EmitVertexList "]"

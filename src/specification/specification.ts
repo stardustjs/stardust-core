@@ -71,7 +71,8 @@ export type StatementType =
     "assign" |      // Assign the result of an expression to a variable.
     "condition" |   // Conditional statement.
     "for" |         // For loop.
-    "emit"          // Emit vertex.
+    "emit" |        // Emit vertex.
+    "discard"       // Discard pixel.
     ;
 
 /** Base statement interface */
@@ -96,6 +97,11 @@ export interface StatementEmit extends Statement {
     attributes: {
         [name: string]: Expression;
     }
+}
+
+/** Discard statement */
+export interface StatementDiscard extends Statement {
+    type: "discard";
 }
 
 /** For loop statement */

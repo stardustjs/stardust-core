@@ -404,6 +404,11 @@ export class Compiler {
                 })
 
             } break;
+            case "discard": {
+                this.addStatement({
+                    type: "discard"
+                } as Specification.StatementDiscard);
+            } break;
             case "statements": {
                 let s = statement as SyntaxTree.StatementStatements;
                 this.compileStatements(s);

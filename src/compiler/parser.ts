@@ -59,6 +59,7 @@ export module SyntaxTree {
         "declare" |
         "return" |
         "emit" |
+        "discard" |
         "for" |
         "if" |
         "statements"
