@@ -226,4 +226,27 @@ export class Pose {
         public position: Vector3 = new Vector3(0, 0, 0),
         public rotation: Quaternion = new Quaternion(0, 0, 0, 1)
     ) { }
+
+    public transform(point: Vector3) {
+        return this.rotation.rotate(point).add(this.position);
+    }
+
+    public transformDirection(direction: Vector3) {
+        return this.rotation.rotate(direction);
+    }
+
+    public concat(pose2: Pose) {
+        return new Pose(
+            this.rotation.rotate(pose2.position).add(this.position),
+            this.rotation.mul(pose2.rotation)
+        );
+    }
+
+    public invert() {
+        let invRotation = this.rotation.conj();
+        return new Pose(
+            invRotation.rotate(this.position).scale(-1),
+            invRotation
+        );
+    }
 }
