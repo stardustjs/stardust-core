@@ -63,7 +63,11 @@ export class TextMark extends Mark {
             ) {
                 let c = image(mImage, tp);
                 let alpha = c.a;
-                emit { color: Color(color.r, color.g, color.b, alpha * color.a) };
+                if(alpha == 0) {
+                    discard;
+                } else {
+                    emit { color: Color(color.r, color.g, color.b, alpha * color.a) };
+                }
             }
         `)["TextShader"], platform);
 
