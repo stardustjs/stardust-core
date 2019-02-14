@@ -74,7 +74,7 @@ export let primitives = `
         emit [ { position: p010, color: color, normal: ny }, { position: p011, color: color, normal: ny }, { position: p111, color: color, normal: ny } ];
         emit [ { position: p000, color: color, normal: nx }, { position: p001, color: color, normal: nx }, { position: p011, color: color, normal: nx } ];
         emit [ { position: p000, color: color, normal: nx }, { position: p011, color: color, normal: nx }, { position: p010, color: color, normal: nx } ];
-        emit [ { position: p100, color: color, normal: nx }, { position: p101, color: color, normal: nx }, { position: p111, color: color, normal: nx } ];
-        emit [ { position: p100, color: color, normal: nx }, { position: p111, color: color, normal: nx }, { position: p110, color: color, normal: nx } ];
+        emit [ { position: p100, color: color, normal: nx }, { position: p111, color: color, normal: nx }, { position: p101, color: color, normal: nx } ];
+        emit [ { position: p100, color: color, normal: nx }, { position: p110, color: color, normal: nx }, { position: p111, color: color, normal: nx } ];
     }
 `;
