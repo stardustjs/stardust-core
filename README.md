@@ -1,4 +1,4 @@
-Stardust Core Library
+[Archived] Stardust Core Library
 ====
 
-<https://stardustjs.github.io/>
+Please use the unified repo for further development: https://github.com/stardustjs/stardust
